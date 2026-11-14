@@ -69,10 +69,15 @@ export default function DashboardPage() {
               <li key={game.id}>
                 <button
                   onClick={() => navigate(`/runde/${game.id}`)}
-                  className="flex w-full items-center justify-between gap-4 rounded-xl border border-stone-800 bg-stone-950/40 p-4 text-left transition hover:border-amber-700 hover:bg-stone-900"
+                  className={`flex w-full items-center justify-between gap-4 rounded-xl border p-4 text-left transition hover:border-amber-600 hover:bg-stone-900 ${
+                    game.role === 'gm' ? 'border-amber-700/60 bg-amber-950/20' : 'border-stone-800 bg-stone-950/40'
+                  }`}
                 >
                   <div className="min-w-0">
-                    <p className="truncate font-display text-lg font-bold text-stone-100">{game.name}</p>
+                    <p className="truncate font-display text-lg font-bold text-stone-100">
+                      {game.role === 'gm' && <span aria-hidden>📜 </span>}
+                      {game.name}
+                    </p>
                     <p className="mt-1 flex items-center gap-2 text-xs text-stone-500">
                       <span className={game.role === 'gm' ? 'badge-gm' : 'badge-player'}>
                         {game.role === 'gm' ? '📜 Spielleiter' : '🗡️ Spieler'}

@@ -7,6 +7,7 @@ import { shortRaceName } from '../lib/party'
 import { CLASSES, RACES, byKey } from '../data/srd'
 import Avatar from '../components/Avatar'
 import Modal from '../components/Modal'
+import GameMasterBanner from '../components/GameMasterBanner'
 import PartyBar from '../components/party/PartyBar'
 import PartyCardDetails from '../components/party/PartyCardDetails'
 import { ConditionIcons } from '../components/party/Conditions'
@@ -149,6 +150,13 @@ function Lobby({ gameId }) {
   return (
     <div className="space-y-6">
       <Link to="/" className="btn-ghost">← Zurück zur Übersicht</Link>
+
+      {isGM && (
+        <GameMasterBanner>
+          Du leitest diese Runde. Du siehst die vollen Charakterbögen aller Spieler, kannst sie bearbeiten,
+          Zustände vergeben und Spieler entfernen. Tippe auf einen Charakter, um loszulegen.
+        </GameMasterBanner>
+      )}
 
       {/* Kopfbereich */}
       <section className="card flex flex-col gap-6 md:flex-row md:items-center md:justify-between">

@@ -7,6 +7,7 @@ import { removeAvatar } from '../lib/avatars'
 import { abilityShort } from '../data/srd'
 import { deriveCharacter, formatMeters, formatMod } from '../lib/character'
 import Avatar from '../components/Avatar'
+import GameMasterBanner from '../components/GameMasterBanner'
 import PartyCardDetails from '../components/party/PartyCardDetails'
 import { ConditionPicker } from '../components/party/Conditions'
 
@@ -118,6 +119,13 @@ function Sheet({ gameId, characterId }) {
         <Link to={`/runde/${gameId}`} className="btn-ghost">← Zur Lobby</Link>
         {canEdit && <Link to={`/runde/${gameId}/charakter/${characterId}/bearbeiten`} className="btn-ghost">✏️ Bearbeiten</Link>}
       </div>
+
+      {isGM && character.user_id !== profile.id && (
+        <GameMasterBanner>
+          Du siehst den vollen Bogen von <b>{character.name}</b> (gespielt von {character.profiles?.username ?? '?'}).
+          Änderungen an Trefferpunkten, Zuständen oder Werten sieht der Spieler sofort.
+        </GameMasterBanner>
+      )}
 
       {/* Kopf */}
       <section className="card flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
