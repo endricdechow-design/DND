@@ -20,7 +20,9 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   (`deriveCharacter(row)`). Abgeleitete Werte (TP-Maximum, RK, Boni) werden **nie** gespeichert, sondern immer berechnet.
 - `src/data/levels.js` – Klassenfähigkeiten Stufe 2–20 und Stufen mit Attributserhöhung
 - `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
-- `netlify.toml` – Build-Einstellungen für das automatische Veröffentlichen (Ordner `dist`)
+- `wrangler.jsonc` – Veröffentlichung über **Cloudflare** (Workers Builds: `npm run build` → `npx wrangler deploy`, Ordner `dist`).
+  `netlify.toml` ist nur noch ein Überbleibsel (Netlify-Kontingent war aufgebraucht).
+- Pro fertigem Feature **einmal** nach `main` pushen (jeder Push = ein Build), Kleinkram sammeln.
 - `supabase/migrations/NNN_name.sql` – nummerierte, **idempotente** SQL-Skripte, die der Nutzer selbst im Supabase SQL Editor ausführt.
   Neue Änderungen = neue Datei, alte nie umschreiben. Nach dem Pushen dem Nutzer sagen, welche Datei er ausführen muss.
 

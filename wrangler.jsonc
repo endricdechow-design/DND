@@ -1,0 +1,10 @@
+// Einstellungen für Cloudflare (Veröffentlichen der fertigen App aus dem Ordner "dist")
+{
+  "name": "dnd",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./dist",
+    // Alle Adressen wie /runde/123 an die App weiterleiten
+    "not_found_handling": "single-page-application"
+  }
+}
