@@ -183,6 +183,7 @@ function Library({ gameId }) {
           <LibraryViewer
             item={viewing}
             canUse={!isGM && assignments.some((a) => a.item_id === viewing.id)}
+            groupOnly={!isGM && !assignments.some((a) => a.item_id === viewing.id)}
             onUsed={async (used) => {
               setViewing(null)
               setNotice(`🧪 „${used.name}“ benutzt und aus deinem Inventar entfernt.`)

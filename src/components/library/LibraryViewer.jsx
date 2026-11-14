@@ -7,8 +7,9 @@ import { libraryType, rarity } from '../../data/library'
  * Detailansicht eines Eintrags (für Spieler und als Vorschau).
  * canUse: Gegenstand liegt im eigenen Inventar → "Benutzen"-Knopf
  * onUsed: wird nach dem Benutzen aufgerufen
+ * groupOnly: Spieler sieht einen Gegenstand, der nur "für alle freigeschaltet" ist (gehört niemandem)
  */
-export default function LibraryViewer({ item, canUse = false, onUsed }) {
+export default function LibraryViewer({ item, canUse = false, onUsed, groupOnly = false }) {
   const type = libraryType(item.type)
   const r = item.type === 'item' ? rarity(item.data?.rarity) : null
   const [confirming, setConfirming] = useState(false)
@@ -46,6 +47,13 @@ export default function LibraryViewer({ item, canUse = false, onUsed }) {
         <p className="whitespace-pre-wrap text-stone-300">{item.description}</p>
       ) : (
         !item.image_url && <p className="text-sm text-stone-500">Keine Beschreibung.</p>
+      )}
+
+      {groupOnly && item.type === 'item' && (
+        <p className="rounded-lg border border-stone-700 bg-stone-950/50 px-4 py-3 text-sm text-stone-400">
+          👥 Diesen Gegenstand hat der Spielleiter für die ganze Gruppe freigeschaltet – er liegt in niemandes Inventar.
+          Damit du ihn <b className="text-stone-200">benutzen</b> kannst, muss der Spielleiter ihn dir über „🎁 Geben“ zuteilen.
+        </p>
       )}
 
       {canUse && item.type === 'item' && (
