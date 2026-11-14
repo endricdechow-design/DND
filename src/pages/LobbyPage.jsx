@@ -7,6 +7,7 @@ import { shortRaceName } from '../lib/party'
 import { CLASSES, RACES, byKey } from '../data/srd'
 import Avatar from '../components/Avatar'
 import Modal from '../components/Modal'
+import GameNav from '../components/GameNav'
 import GameMasterBanner from '../components/GameMasterBanner'
 import PartyBar from '../components/party/PartyBar'
 import PartyCardDetails from '../components/party/PartyCardDetails'
@@ -149,7 +150,7 @@ function Lobby({ gameId }) {
 
   return (
     <div className="space-y-6">
-      <Link to="/" className="btn-ghost">← Zurück zur Übersicht</Link>
+      <GameNav gameId={gameId} />
 
       {isGM && (
         <GameMasterBanner>

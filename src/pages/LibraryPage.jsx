@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
 import { LIBRARY_TYPES } from '../data/library'
 import Modal from '../components/Modal'
+import GameNav from '../components/GameNav'
 import GameMasterBanner from '../components/GameMasterBanner'
 import LibraryCard from '../components/library/LibraryCard'
 import LibraryEditor from '../components/library/LibraryEditor'
 import LibraryViewer from '../components/library/LibraryViewer'
+import GiveDialog from '../components/library/GiveDialog'
 
 export default function LibraryPage() {
   const { gameId } = useParams()
@@ -26,6 +28,7 @@ function Library({ gameId }) {
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState(null) // { item } oder { item: null } für neu
   const [viewing, setViewing] = useState(null)
+  const [giving, setGiving] = useState(null) // Eintrag, der gerade verschenkt wird
   const [error, setError] = useState('')
   const channelRef = useRef(null)
 
@@ -102,7 +105,7 @@ function Library({ gameId }) {
 
   return (
     <div className="space-y-6">
-      <Link to={`/runde/${gameId}`} className="btn-ghost">← Zur Lobby</Link>
+      <GameNav gameId={gameId} />
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -137,6 +140,7 @@ function Library({ gameId }) {
           setSearch={setSearch}
           onOpen={(item) => setEditing({ item })}
           onToggle={toggleVisibility}
+          onGive={setGiving}
         />
       ) : (
         <PlayerView items={items} myAssignments={assignments.map((a) => a.item_id)} onOpen={setViewing} />
@@ -157,6 +161,21 @@ function Library({ gameId }) {
         </Modal>
       )}
 
+      {giving && (
+        <Modal onClose={() => setGiving(null)}>
+          <GiveDialog
+            gameId={gameId}
+            item={giving}
+            players={players}
+            onGiven={async () => {
+              await load()
+              notifyChanged()
+            }}
+            onClose={() => setGiving(null)}
+          />
+        </Modal>
+      )}
+
       {viewing && (
         <Modal onClose={() => setViewing(null)}>
           <LibraryViewer item={viewing} />
@@ -169,7 +188,7 @@ function Library({ gameId }) {
 // ---------------------------------------------------------------------
 // Ansicht des Spielleiters: alles, nach Ordnern sortiert, mit Filter und Suche
 // ---------------------------------------------------------------------
-function GameMasterView({ items, folders, players, assignedTo, filter, setFilter, search, setSearch, onOpen, onToggle }) {
+function GameMasterView({ items, folders, players, assignedTo, filter, setFilter, search, setSearch, onOpen, onToggle, onGive }) {
   const term = search.trim().toLowerCase()
   const visible = items.filter(
     (i) => (filter === 'all' || i.type === filter) && (!term || `${i.name} ${i.description} ${i.folder}`.toLowerCase().includes(term))
@@ -216,6 +235,7 @@ function GameMasterView({ items, folders, players, assignedTo, filter, setFilter
                   assignedNames={assignedTo(item.id).map(nameOf)}
                   onOpen={() => onOpen(item)}
                   onToggleVisibility={() => onToggle(item)}
+                  onGive={() => onGive(item)}
                 />
               ))}
             </div>

@@ -8,6 +8,7 @@ import { ABILITIES, abilityShort } from '../data/srd'
 import { featuresUpTo } from '../data/levels'
 import { deriveCharacter, formatMeters, formatMod } from '../lib/character'
 import Avatar from '../components/Avatar'
+import GameNav from '../components/GameNav'
 import GameMasterBanner from '../components/GameMasterBanner'
 import PartyCardDetails from '../components/party/PartyCardDetails'
 import { ConditionPicker } from '../components/party/Conditions'
@@ -81,7 +82,7 @@ function Sheet({ gameId, characterId }) {
   if (partyCard) {
     return (
       <div className="space-y-6">
-        <Link to={`/runde/${gameId}`} className="btn-ghost">← Zur Lobby</Link>
+        <GameNav gameId={gameId} />
         <section className="card">
           <PartyCardDetails card={partyCard} playerName={partyCard.profiles?.username} canEditConditions={false} />
           <p className="mt-5 text-xs text-stone-500">
@@ -131,7 +132,7 @@ function Sheet({ gameId, characterId }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link to={`/runde/${gameId}`} className="btn-ghost">← Zur Lobby</Link>
+        <GameNav gameId={gameId} />
         {canEdit && <Link to={`/runde/${gameId}/charakter/${characterId}/bearbeiten`} className="btn-ghost">✏️ Bearbeiten</Link>}
       </div>
 
@@ -243,7 +244,15 @@ function Sheet({ gameId, characterId }) {
         </section>
       </div>
 
-      <OwnedFromLibrary gameId={gameId} userId={character.user_id} />
+      <OwnedFromLibrary
+        gameId={gameId}
+        player={{
+          user_id: character.user_id,
+          short: character.name,
+          label: `${character.name} (${character.profiles?.username ?? '?'})`,
+        }}
+        canGive={isGM}
+      />
 
       {c.level > 1 && (
         <LevelHistory character={character} derived={c} canEdit={canEdit} onUndo={undoLastLevel} />

@@ -1,48 +1,91 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { supabase } from '../../lib/supabase'
 import { libraryType, rarity } from '../../data/library'
+import Modal from '../Modal'
+import GiveDialog from './GiveDialog'
+import LibraryViewer from './LibraryViewer'
 
-// Kompakte Liste: Gegenstände und Effekte, die einem Spieler zugeteilt wurden
-export default function OwnedFromLibrary({ gameId, userId }) {
+/**
+ * Inventar & Effekte eines Spielers auf dem Charakterbogen (live).
+ * player: { user_id, label, short } – für den "Geben"-Knopf des Spielleiters
+ */
+export default function OwnedFromLibrary({ gameId, player, canGive }) {
   const [entries, setEntries] = useState([])
+  const [giving, setGiving] = useState(false)
+  const [viewing, setViewing] = useState(null)
+
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from('library_assignments')
+      .select('library_items(*)')
+      .eq('game_id', gameId)
+      .eq('user_id', player.user_id)
+    setEntries((data ?? []).map((row) => row.library_items).filter(Boolean))
+  }, [gameId, player.user_id])
 
   useEffect(() => {
-    let cancelled = false
-    supabase
-      .from('library_assignments')
-      .select('library_items(id, type, name, data)')
-      .eq('game_id', gameId)
-      .eq('user_id', userId)
-      .then(({ data }) => {
-        if (!cancelled) setEntries((data ?? []).map((row) => row.library_items).filter(Boolean))
-      })
+    load()
+    const channel = supabase
+      .channel(`owned-${player.user_id}-${Math.random().toString(36).slice(2)}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'library_assignments', filter: `user_id=eq.${player.user_id}` }, load)
+      .subscribe()
     return () => {
-      cancelled = true
+      supabase.removeChannel(channel)
     }
-  }, [gameId, userId])
+  }, [load, player.user_id])
 
-  const shown = entries.filter((e) => e.type === 'item' || e.type === 'effect')
-  if (!shown.length) return null
+  if (!entries.length && !canGive) return null
+
+  const sorted = [...entries].sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name, 'de'))
 
   return (
     <section className="card">
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <h2 className="title text-xl">🎒 Inventar & Effekte</h2>
-        <Link to={`/runde/${gameId}/bibliothek`} className="text-sm text-amber-400 hover:text-amber-300">Zur Bibliothek →</Link>
+        <div className="flex items-center gap-3">
+          {canGive && (
+            <button type="button" className="btn-secondary px-3 py-1.5 text-sm" onClick={() => setGiving(true)}>
+              🎁 Aus der Bibliothek geben
+            </button>
+          )}
+          <Link to={`/runde/${gameId}/bibliothek`} className="text-sm text-amber-400 hover:text-amber-300">Bibliothek →</Link>
+        </div>
       </div>
-      <ul className="flex flex-wrap gap-2">
-        {shown
-          .sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name, 'de'))
-          .map((e) => {
+
+      {sorted.length ? (
+        <ul className="flex flex-wrap gap-2">
+          {sorted.map((e) => {
             const r = e.type === 'item' ? rarity(e.data?.rarity) : null
             return (
-              <li key={e.id} className={`rounded-full border px-3 py-1.5 text-sm ${e.type === 'effect' ? 'border-sky-800 bg-sky-950/40 text-sky-200' : 'border-stone-700 bg-stone-950/40'}`}>
-                {libraryType(e.type).icon} <span className={r?.color ?? ''}>{e.name}</span>
+              <li key={e.id}>
+                <button
+                  type="button"
+                  onClick={() => setViewing(e)}
+                  className={`rounded-full border px-3 py-1.5 text-sm transition hover:border-amber-500 ${
+                    e.type === 'effect' ? 'border-sky-800 bg-sky-950/40 text-sky-200' : 'border-stone-700 bg-stone-950/40'
+                  }`}
+                >
+                  {libraryType(e.type).icon} <span className={r?.color ?? ''}>{e.name}</span>
+                </button>
               </li>
             )
           })}
-      </ul>
+        </ul>
+      ) : (
+        <p className="text-sm text-stone-500">Noch nichts im Inventar.</p>
+      )}
+
+      {giving && (
+        <Modal onClose={() => setGiving(false)}>
+          <GiveDialog gameId={gameId} player={player} onGiven={load} onClose={() => setGiving(false)} />
+        </Modal>
+      )}
+      {viewing && (
+        <Modal onClose={() => setViewing(null)}>
+          <LibraryViewer item={viewing} />
+        </Modal>
+      )}
     </section>
   )
 }

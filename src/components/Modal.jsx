@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
-// Einfaches Pop-up-Fenster: schließt bei Klick daneben oder mit der Esc-Taste
+// Einfaches Pop-up-Fenster: schließt bei Klick daneben oder mit der Esc-Taste.
+// Wird direkt in <body> gezeichnet (Portal), damit es immer über der ganzen Seite liegt.
 export default function Modal({ onClose, children }) {
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -12,7 +14,7 @@ export default function Modal({ onClose, children }) {
     }
   }, [onClose])
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-4"
       onClick={onClose}
@@ -32,6 +34,7 @@ export default function Modal({ onClose, children }) {
         </button>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

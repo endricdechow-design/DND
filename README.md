@@ -23,6 +23,9 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 - **Bibliothek des Spielleiters:** Gegenstände, Karten, Handouts und Effekte mit Bild, Beschreibung und Ordnern
   - Einträge sind versteckt, für alle freigeschaltet oder einzelnen Spielern zugeteilt (Inventar / Effekte)
   - Spieler sehen nur, was für sie freigeschaltet ist – live, ohne Neuladen
+  - „🎁 Geben“ direkt an der Kachel oder auf dem Charakterbogen – mit Sicherheitsfrage
+  - Spieler bekommen eine animierte Einblendung, wenn sie etwas erhalten
+- **Schnellnavigation** in jeder Runde: Lobby · Mein Charakter · Bibliothek
 
 ## Geplant (in dieser Reihenfolge)
 

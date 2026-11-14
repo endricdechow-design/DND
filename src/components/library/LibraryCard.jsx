@@ -6,7 +6,7 @@ import { libraryType, rarity } from '../../data/library'
  * assignedNames: Namen der zugeteilten Spieler (nur für den Spielleiter)
  * onToggleVisibility: schneller Freischalten/Verstecken-Knopf (nur für den Spielleiter)
  */
-export default function LibraryCard({ item, assignedNames, onOpen, onToggleVisibility }) {
+export default function LibraryCard({ item, assignedNames, onOpen, onToggleVisibility, onGive }) {
   const type = libraryType(item.type)
   const r = item.type === 'item' ? rarity(item.data?.rarity) : null
   const isGMView = Boolean(onToggleVisibility)
@@ -42,15 +42,24 @@ export default function LibraryCard({ item, assignedNames, onOpen, onToggleVisib
         </div>
       </button>
       {isGMView && (
-        <button
-          type="button"
-          onClick={onToggleVisibility}
-          className={`border-t border-stone-800 px-3 py-2 text-sm transition ${
-            item.visibility === 'all' ? 'text-stone-400 hover:bg-stone-800' : 'text-amber-300 hover:bg-amber-950/40'
-          }`}
-        >
-          {item.visibility === 'all' ? '🔒 Wieder verstecken' : '🔓 Für alle freischalten'}
-        </button>
+        <div className="grid grid-cols-2 border-t border-stone-800 text-sm">
+          <button
+            type="button"
+            onClick={onGive}
+            className="border-r border-stone-800 px-2 py-2 text-violet-300 transition hover:bg-violet-950/40"
+          >
+            🎁 Geben
+          </button>
+          <button
+            type="button"
+            onClick={onToggleVisibility}
+            className={`px-2 py-2 transition ${
+              item.visibility === 'all' ? 'text-stone-400 hover:bg-stone-800' : 'text-amber-300 hover:bg-amber-950/40'
+            }`}
+          >
+            {item.visibility === 'all' ? '🔒 Verstecken' : '🔓 Freischalten'}
+          </button>
+        </div>
       )}
     </div>
   )

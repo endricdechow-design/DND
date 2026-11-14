@@ -53,3 +53,33 @@ body {
     @apply rounded-lg border border-emerald-800/60 bg-emerald-950/50 px-4 py-2.5 text-sm text-emerald-300;
   }
 }
+
+/* ---------- Geschenk-Einblendung (wenn der Spielleiter etwas gibt) ---------- */
+@keyframes gift-pop {
+  0% { transform: translateY(60px) scale(0.8); opacity: 0; }
+  60% { transform: translateY(-8px) scale(1.04); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes gift-glow {
+  0%, 100% { box-shadow: 0 0 24px rgb(245 158 11 / 0.35); }
+  50% { box-shadow: 0 0 48px rgb(245 158 11 / 0.75); }
+}
+@keyframes gift-wiggle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-12deg) scale(1.1); }
+  40% { transform: rotate(10deg) scale(1.15); }
+  60% { transform: rotate(-6deg) scale(1.1); }
+  80% { transform: rotate(4deg) scale(1.05); }
+}
+@keyframes sparkle-rise {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(-110px) scale(1.2); opacity: 0; }
+}
+.gift-toast { animation: gift-pop 0.6s ease-out both, gift-glow 2s ease-in-out 0.6s infinite; }
+.gift-icon { animation: gift-wiggle 1.2s ease-in-out 0.4s 2; }
+.gift-sparkle { animation: sparkle-rise 1.8s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gift-toast, .gift-icon, .gift-sparkle { animation: none; }
+}
