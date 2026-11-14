@@ -183,7 +183,8 @@ function Wizard({ gameId, characterId }) {
         const hpCurrent = Math.min(newMax, Math.max(0, original.hp_current + Math.max(0, newMax - oldMax)))
         const { error } = await supabase.from('characters').update({ ...row, hp_current: hpCurrent }).eq('id', id)
         if (error) throw error
-        if (avatarFile && original.avatar_url) removeAvatar(original.avatar_url)
+        // Altes Bild aufräumen, wenn es ersetzt oder entfernt wurde
+        if (original.avatar_url && original.avatar_url !== avatarUrl) removeAvatar(original.avatar_url)
       } else {
         const { error } = await supabase
           .from('characters')
@@ -404,9 +405,23 @@ function Wizard({ gameId, characterId }) {
                       if (!file) return
                       setAvatarFile(file)
                       setAvatarPreview(URL.createObjectURL(file))
+                      e.target.value = '' // gleiche Datei kann erneut gewählt werden
                     }}
                   />
                 </label>
+                {(avatarPreview || draft.avatarUrl) && (
+                  <button
+                    type="button"
+                    className="text-sm text-stone-500 hover:text-red-300"
+                    onClick={() => {
+                      setAvatarFile(null)
+                      setAvatarPreview(null)
+                      update({ avatarUrl: null })
+                    }}
+                  >
+                    🗑️ Bild entfernen
+                  </button>
+                )}
               </div>
 
               <div className="space-y-4">
