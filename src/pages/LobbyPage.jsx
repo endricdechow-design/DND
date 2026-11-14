@@ -3,8 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
-import Avatar from '../components/Avatar'
+import { shortRaceName } from '../lib/party'
 import { CLASSES, RACES, byKey } from '../data/srd'
+import Avatar from '../components/Avatar'
+import Modal from '../components/Modal'
+import PartyBar from '../components/party/PartyBar'
+import PartyCardDetails from '../components/party/PartyCardDetails'
+import { ConditionIcons } from '../components/party/Conditions'
 
 // "key" sorgt dafür, dass beim Wechsel in eine andere Runde alles frisch geladen wird
 export default function LobbyPage() {
@@ -18,7 +23,8 @@ function Lobby({ gameId }) {
 
   const [game, setGame] = useState(null)
   const [members, setMembers] = useState(null) // null = lädt noch
-  const [characters, setCharacters] = useState([])
+  const [cards, setCards] = useState([]) // Gruppenkarten aller Charaktere
+  const [selectedId, setSelectedId] = useState(null) // geöffnete Charakterkarte
   const [error, setError] = useState('')
   const [live, setLive] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -46,15 +52,15 @@ function Lobby({ gameId }) {
     }
   }, [gameId, backToDashboard])
 
-  // Teilnehmerliste + Charaktere laden
+  // Teilnehmer + Gruppenkarten laden
   const loadMembers = useCallback(async () => {
-    const [{ data, error }, { data: chars }] = await Promise.all([
+    const [{ data, error }, { data: partyCards }] = await Promise.all([
       supabase
         .from('game_members')
         .select('user_id, role, joined_at, profiles(username)')
         .eq('game_id', gameId)
         .order('joined_at', { ascending: true }),
-      supabase.from('characters').select('id, user_id, name, race, class, level, avatar_url').eq('game_id', gameId),
+      supabase.from('party_cards').select('*').eq('game_id', gameId).order('name'),
     ])
 
     if (error) {
@@ -67,32 +73,20 @@ function Lobby({ gameId }) {
       return
     }
     setMembers(data)
-    setCharacters(chars ?? [])
+    setCards(partyCards ?? [])
   }, [gameId, profile.id, backToDashboard])
 
-  // Realtime: bei jeder Änderung an den Teilnehmern neu laden
+  // Realtime: bei Änderungen an Teilnehmern oder Charakteren neu laden
   useEffect(() => {
     loadMembers()
 
     const channel = supabase
       .channel(`lobby-${gameId}-${Math.random().toString(36).slice(2)}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'game_members', filter: `game_id=eq.${gameId}` },
-        () => loadMembers()
-      )
-      .on(
-        // DELETE-Events lassen sich nicht filtern – wir laden einfach neu
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'game_members' },
-        () => loadMembers()
-      )
-      .on(
-        // Neue oder geänderte Charaktere (Name, Bild, Stufe …)
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'characters', filter: `game_id=eq.${gameId}` },
-        () => loadMembers()
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'game_members', filter: `game_id=eq.${gameId}` }, () => loadMembers())
+      // DELETE-Events lassen sich nicht filtern – wir laden einfach neu
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'game_members' }, () => loadMembers())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'party_cards', filter: `game_id=eq.${gameId}` }, () => loadMembers())
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'party_cards' }, () => loadMembers())
       .subscribe((status) => setLive(status === 'SUBSCRIBED'))
 
     return () => {
@@ -108,8 +102,10 @@ function Lobby({ gameId }) {
   const isGM = me?.role === 'gm'
   const gm = members.find((m) => m.role === 'gm')
   const players = members.filter((m) => m.role !== 'gm')
-  const characterOf = (userId) => characters.find((c) => c.user_id === userId)
-  const myCharacter = characterOf(profile.id)
+  const cardOf = (userId) => cards.find((c) => c.user_id === userId)
+  const myCard = cardOf(profile.id)
+  const selectedCard = cards.find((c) => c.character_id === selectedId)
+  const playerNameOf = (userId) => members.find((m) => m.user_id === userId)?.profiles?.username
 
   async function copyCode() {
     try {
@@ -118,6 +114,15 @@ function Lobby({ gameId }) {
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // Zwischenablage nicht verfügbar – der Code steht ja groß da
+    }
+  }
+
+  async function updateConditions(card, conditions) {
+    setCards((prev) => prev.map((c) => (c.character_id === card.character_id ? { ...c, conditions } : c)))
+    const { error } = await supabase.from('characters').update({ conditions }).eq('id', card.character_id)
+    if (error) {
+      setError(translateError(error.message))
+      loadMembers()
     }
   }
 
@@ -172,8 +177,11 @@ function Lobby({ gameId }) {
 
       {error && <p className="alert-error">{error}</p>}
 
+      {/* Avatar-Leiste der Gruppe */}
+      <PartyBar cards={cards} myUserId={profile.id} onSelect={(card) => setSelectedId(card.character_id)} />
+
       {/* Mein Charakter (nur für Spieler) */}
-      {!isGM && !myCharacter && (
+      {!isGM && !myCard && (
         <section className="card flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
           <div className="text-5xl" aria-hidden>🧝</div>
           <div className="flex-1">
@@ -183,17 +191,19 @@ function Lobby({ gameId }) {
           <Link to={`/runde/${gameId}/charakter/neu`} className="btn-primary">✨ Charakter erstellen</Link>
         </section>
       )}
-      {!isGM && myCharacter && (
+      {!isGM && myCard && (
         <Link
-          to={`/runde/${gameId}/charakter/${myCharacter.id}`}
+          to={`/runde/${gameId}/charakter/${myCard.character_id}`}
           className="card flex items-center gap-4 transition hover:border-amber-600"
         >
-          <Avatar name={myCharacter.name} src={myCharacter.avatar_url} size="lg" />
+          <Avatar name={myCard.name} src={myCard.avatar_url} size="lg" />
           <div className="min-w-0 flex-1">
             <p className="text-xs uppercase tracking-widest text-stone-500">Dein Charakter</p>
-            <p className="title truncate text-2xl">{myCharacter.name}</p>
+            <p className="title truncate text-2xl">{myCard.name}</p>
           </div>
-          <span className="btn-ghost shrink-0">Bogen öffnen →</span>
+          <span className="btn-ghost shrink-0">
+            <span className="hidden sm:inline">Bogen öffnen</span> →
+          </span>
         </Link>
       )}
 
@@ -208,39 +218,38 @@ function Lobby({ gameId }) {
           {[gm, ...players].filter(Boolean).map((m) => {
             const name = m.profiles?.username ?? 'Unbekannt'
             const memberIsGM = m.role === 'gm'
-            const char = characterOf(m.user_id)
-            const cardClass = `flex items-center gap-3 rounded-xl border p-3 ${
-              memberIsGM ? 'border-amber-700/60 bg-amber-950/20' : 'border-stone-800 bg-stone-950/40'
-            }`
+            const card = cardOf(m.user_id)
             const content = (
               <>
-                <Avatar name={char?.name ?? name} src={char?.avatar_url} variant={memberIsGM ? 'gm' : 'player'} />
+                <Avatar name={card?.name ?? name} src={card?.avatar_url} variant={memberIsGM ? 'gm' : 'player'} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-stone-100">
-                    {char ? char.name : name} {m.user_id === profile.id && <span className="text-xs text-stone-500">(du)</span>}
+                  <p className="flex items-center gap-2 font-medium text-stone-100">
+                    <span className="truncate">{card ? card.name : name}</span>
+                    {m.user_id === profile.id && <span className="text-xs text-stone-500">(du)</span>}
+                    {card && <ConditionIcons conditions={card.conditions} />}
                   </p>
                   <p className={`truncate text-xs ${memberIsGM ? 'text-amber-400' : 'text-violet-300'}`}>
                     {memberIsGM
                       ? '📜 Spielleiter'
-                      : char
-                        ? `${byKey(RACES, char.race)?.name.replace(/ \(.*\)/, '') ?? ''} · ${byKey(CLASSES, char.class)?.name ?? ''} · Stufe ${char.level}`
+                      : card
+                        ? `${shortRaceName(byKey(RACES, card.race)?.name)} · ${byKey(CLASSES, card.class)?.name ?? ''} · Stufe ${card.level}`
                         : '🗡️ Spieler · noch kein Charakter'}
                   </p>
-                  {char && <p className="truncate text-xs text-stone-500">gespielt von {name}</p>}
+                  {card && <p className="truncate text-xs text-stone-500">gespielt von {name}</p>}
                 </div>
               </>
             )
+            const cardClass = `flex w-full items-center gap-3 rounded-xl border p-3 text-left ${
+              memberIsGM ? 'border-amber-700/60 bg-amber-950/20' : 'border-stone-800 bg-stone-950/40'
+            }`
             return (
-              <li key={m.user_id} className={char ? '' : cardClass}>
-                {char ? (
-                  <Link
-                    to={`/runde/${gameId}/charakter/${char.id}`}
-                    className={`${cardClass} transition hover:border-amber-600`}
-                  >
+              <li key={m.user_id}>
+                {card ? (
+                  <button type="button" onClick={() => setSelectedId(card.character_id)} className={`${cardClass} transition hover:border-amber-600`}>
                     {content}
-                  </Link>
+                  </button>
                 ) : (
-                  content
+                  <div className={cardClass}>{content}</div>
                 )}
                 {isGM && !memberIsGM && (
                   <button
@@ -265,10 +274,8 @@ function Lobby({ gameId }) {
       {/* Vorschau auf kommende Bereiche */}
       <section className="card">
         <h2 className="title mb-4 text-2xl">Bald verfügbar</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2">
           {[
-            ['👥', 'Gruppenansicht', 'Sichtbarkeit & Avatar-Leiste'],
-            ['🎲', 'Würfel', 'Gemeinsames Wurf-Protokoll'],
             ['📚', 'Bibliothek', 'Karten, Gegenstände & Effekte'],
             ['⚔️', 'Kampffeld', 'Raster, Figuren & Initiative'],
           ].map(([icon, title, text]) => (
@@ -288,6 +295,23 @@ function Lobby({ gameId }) {
           <button onClick={leaveGame} className="btn-danger">Runde verlassen</button>
         )}
       </div>
+
+      {/* Charakterkarte als Pop-up */}
+      {selectedCard && (
+        <Modal onClose={() => setSelectedId(null)}>
+          <PartyCardDetails
+            card={selectedCard}
+            playerName={playerNameOf(selectedCard.user_id)}
+            canEditConditions={isGM || selectedCard.user_id === profile.id}
+            onConditionsChange={(conditions) => updateConditions(selectedCard, conditions)}
+            sheetLink={
+              isGM || selectedCard.user_id === profile.id
+                ? `/runde/${gameId}/charakter/${selectedCard.character_id}`
+                : null
+            }
+          />
+        </Modal>
+      )}
     </div>
   )
 }

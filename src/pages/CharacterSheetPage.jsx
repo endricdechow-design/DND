@@ -7,6 +7,8 @@ import { removeAvatar } from '../lib/avatars'
 import { abilityShort } from '../data/srd'
 import { deriveCharacter, formatMeters, formatMod } from '../lib/character'
 import Avatar from '../components/Avatar'
+import PartyCardDetails from '../components/party/PartyCardDetails'
+import { ConditionPicker } from '../components/party/Conditions'
 
 export default function CharacterSheetPage() {
   const { gameId, characterId } = useParams()
@@ -17,6 +19,7 @@ function Sheet({ gameId, characterId }) {
   const { profile } = useAuth()
   const navigate = useNavigate()
   const [character, setCharacter] = useState(null)
+  const [partyCard, setPartyCard] = useState(null) // eingeschränkte Ansicht für Mitspieler
   const [isGM, setIsGM] = useState(false)
   const [error, setError] = useState('')
 
@@ -25,8 +28,22 @@ function Sheet({ gameId, characterId }) {
       supabase.from('characters').select('*, profiles(username)').eq('id', characterId).maybeSingle(),
       supabase.from('game_members').select('role').eq('game_id', gameId).eq('user_id', profile.id).maybeSingle(),
     ])
-    if (!char || !membership) {
+    if (!membership) {
       navigate(`/runde/${gameId}`, { replace: true })
+      return
+    }
+    if (!char) {
+      // Kein Zugriff auf den vollen Bogen → Gruppenkarte zeigen (falls vorhanden)
+      const { data: card } = await supabase
+        .from('party_cards')
+        .select('*, profiles(username)')
+        .eq('character_id', characterId)
+        .maybeSingle()
+      if (!card) {
+        navigate(`/runde/${gameId}`, { replace: true })
+        return
+      }
+      setPartyCard(card)
       return
     }
     setCharacter(char)
@@ -40,11 +57,35 @@ function Sheet({ gameId, characterId }) {
       .channel(`character-${characterId}-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'characters', filter: `id=eq.${characterId}` }, load)
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'characters' }, load)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'party_cards', filter: `character_id=eq.${characterId}` }, load)
       .subscribe()
     return () => {
       supabase.removeChannel(channel)
     }
   }, [characterId, load])
+
+  // Maximale TP für den Lebensbalken der Gruppe aktuell halten (wird nur hier berechnet)
+  const canEditLoaded = character && (character.user_id === profile.id || isGM)
+  const computedMax = character ? deriveCharacter(character).hpMax : null
+  useEffect(() => {
+    if (canEditLoaded && computedMax && character.hp_max !== computedMax) {
+      supabase.from('characters').update({ hp_max: computedMax }).eq('id', characterId).then(() => {})
+    }
+  }, [canEditLoaded, computedMax, character?.hp_max, characterId])
+
+  if (partyCard) {
+    return (
+      <div className="space-y-6">
+        <Link to={`/runde/${gameId}`} className="btn-ghost">← Zur Lobby</Link>
+        <section className="card">
+          <PartyCardDetails card={partyCard} playerName={partyCard.profiles?.username} canEditConditions={false} />
+          <p className="mt-5 text-xs text-stone-500">
+            🔒 Den vollen Charakterbogen sehen nur {partyCard.name}s Spieler und der Spielleiter.
+          </p>
+        </section>
+      </div>
+    )
+  }
 
   if (!character) return <p className="title animate-pulse text-center text-xl">Lade Charakterbogen …</p>
 
@@ -105,6 +146,12 @@ function Sheet({ gameId, characterId }) {
 
       <HitPoints character={character} hpMax={c.hpMax} canEdit={canEdit} onSave={saveFields} />
 
+      <section className="card">
+        <h2 className="title mb-1 text-xl">Zustände</h2>
+        <p className="mb-3 text-xs text-stone-500">Tippe an, was gerade auf {character.name} wirkt – die Gruppe sieht es sofort.</p>
+        <ConditionPicker conditions={character.conditions ?? []} onChange={(conditions) => saveFields({ conditions })} />
+      </section>
+
       {/* Attribute */}
       <section className="grid grid-cols-3 gap-3 sm:grid-cols-6">
         {Object.entries(c.abilities).map(([key, score]) => (
@@ -161,7 +208,24 @@ function Sheet({ gameId, characterId }) {
         </section>
       </div>
 
-      <Notes character={character} canEdit={canEdit} onSave={saveFields} />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Notes
+          character={character}
+          field="notes"
+          title="Öffentliche Notizen"
+          hint="👥 Für alle in der Runde sichtbar – Aussehen, Vorgeschichte, was die Gruppe wissen darf."
+          placeholder="z. B. Aussehen, Herkunft, Ziele …"
+          onSave={saveFields}
+        />
+        <Notes
+          character={character}
+          field="privateNotes"
+          title="Private Notizen"
+          hint="🔒 Nur für dich und den Spielleiter – Ausrüstung, Gold, Geheimnisse."
+          placeholder="z. B. Ausrüstung, Gold, Geheimnisse, Pläne …"
+          onSave={saveFields}
+        />
+      </div>
 
       {canEdit && (
         <div className="flex justify-end">
@@ -238,8 +302,8 @@ function HitPoints({ character, hpMax, canEdit, onSave }) {
 // ---------------------------------------------------------------------
 // Notizen
 // ---------------------------------------------------------------------
-function Notes({ character, canEdit, onSave }) {
-  const saved = character.data?.notes ?? ''
+function Notes({ character, field, title, hint, placeholder, onSave }) {
+  const saved = character.data?.[field] ?? ''
   const [text, setText] = useState(saved)
   const [prevSaved, setPrevSaved] = useState(saved)
 
@@ -249,34 +313,26 @@ function Notes({ character, canEdit, onSave }) {
     setText(saved)
   }
 
-  if (!canEdit && !saved) return null
-
   return (
     <section className="card">
-      <h2 className="title mb-1 text-xl">Notizen</h2>
-      <p className="mb-3 text-xs text-stone-500">Für alle in der Runde sichtbar – Ausrüstung, Geschichte, Ziele …</p>
-      {canEdit ? (
-        <>
-          <textarea
-            className="input min-h-32"
-            value={text}
-            maxLength={5000}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="z. B. Ausrüstung, Gold, Vorgeschichte, wichtige Personen …"
-          />
-          <div className="mt-2 flex justify-end">
-            <button
-              className="btn-primary"
-              disabled={text === saved}
-              onClick={() => onSave({ data: { ...character.data, notes: text } })}
-            >
-              Notizen speichern
-            </button>
-          </div>
-        </>
-      ) : (
-        <p className="whitespace-pre-wrap text-stone-300">{saved}</p>
-      )}
+      <h2 className="title mb-1 text-xl">{title}</h2>
+      <p className="mb-3 text-xs text-stone-500">{hint}</p>
+      <textarea
+        className="input min-h-32"
+        value={text}
+        maxLength={5000}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={placeholder}
+      />
+      <div className="mt-2 flex justify-end">
+        <button
+          className="btn-primary"
+          disabled={text === saved}
+          onClick={() => onSave({ data: { ...character.data, [field]: text } })}
+        >
+          Speichern
+        </button>
+      </div>
     </section>
   )
 }

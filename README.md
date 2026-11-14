@@ -14,16 +14,21 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
   - Avatar-Bild hochladen (wird automatisch verkleinert)
   - Charakterbogen mit Schaden/Heilen/temporären TP, Langer Rast, Notizen und Stufenaufstieg
   - Der Spielleiter kann alle Charaktere seiner Runde bearbeiten; Änderungen erscheinen live
+- **Gruppenansicht:** Avatar-Leiste mit Lebensbalken und Zuständen; Klick öffnet die Charakterkarte
+  - Mitspieler sehen nur Name, Bild, Volk, Klasse, Stufe, Gesundheit, Zustände und öffentliche Notizen
+  - Den vollen Bogen und die privaten Notizen sehen nur der Spieler selbst und der Spielleiter
+  - 15 Zustände aus dem SRD (z. B. vergiftet, liegend) – setzbar von Spieler und Spielleiter
 
 ## Geplant (in dieser Reihenfolge)
 
 1. ✅ Fundament: Login, Runden, Einladungscode, Live-Lobby
 2. ✅ Charaktere: Erstellung nach SRD 5.1, Werte automatisch berechnet, Avatar-Bild
-3. ⬜ Gruppenansicht: Avatar-Köpfe, Klick zeigt Charakterkarte (mit Sichtbarkeitsstufen)
-4. ⬜ Würfel: Würfeln mit gemeinsamem Protokoll
-5. ⬜ Bibliothek des Spielleiters: Karten, Gegenstände, Effekte – freischalten & zuteilen
-6. ⬜ Kampffeld: Raster, Gegner mit Bild, Figuren per Drag & Drop, Initiative
-7. ⬜ Extras: Nebel des Krieges, Abenteuer-Tagebuch, Regelhilfen für Anfänger
+3. ✅ Gruppenansicht: Avatar-Köpfe, Klick zeigt Charakterkarte (mit Sichtbarkeitsstufen)
+4. ⬜ Bibliothek des Spielleiters: Karten, Gegenstände, Effekte – freischalten & zuteilen
+5. ⬜ Kampffeld: Raster, Gegner mit Bild, Figuren per Drag & Drop, Initiative
+6. ⬜ Extras: Nebel des Krieges, Abenteuer-Tagebuch, Regelhilfen für Anfänger
+
+*Gewürfelt wird bewusst weiter mit echten Würfeln am Tisch.*
 
 ## Lizenz der Regelinhalte
 

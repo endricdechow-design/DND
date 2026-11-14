@@ -173,6 +173,7 @@ function Wizard({ gameId, characterId }) {
         armor: draft.armor,
         shield: draft.shield,
         notes: draft.notes,
+        privateNotes: draft.privateNotes ?? '',
       }
       const row = { name: draft.name.trim(), level: draft.level, race: draft.race, class: draft.class, avatar_url: avatarUrl, data }
       const newMax = deriveCharacter(row).hpMax
@@ -181,14 +182,14 @@ function Wizard({ gameId, characterId }) {
         // Steigt das Maximum (z. B. Stufenaufstieg), steigen die aktuellen TP mit
         const oldMax = deriveCharacter(original).hpMax
         const hpCurrent = Math.min(newMax, Math.max(0, original.hp_current + Math.max(0, newMax - oldMax)))
-        const { error } = await supabase.from('characters').update({ ...row, hp_current: hpCurrent }).eq('id', id)
+        const { error } = await supabase.from('characters').update({ ...row, hp_current: hpCurrent, hp_max: newMax }).eq('id', id)
         if (error) throw error
         // Altes Bild aufräumen, wenn es ersetzt oder entfernt wurde
         if (original.avatar_url && original.avatar_url !== avatarUrl) removeAvatar(original.avatar_url)
       } else {
         const { error } = await supabase
           .from('characters')
-          .insert({ id, game_id: gameId, user_id: profile.id, ...row, hp_current: newMax })
+          .insert({ id, game_id: gameId, user_id: profile.id, ...row, hp_current: newMax, hp_max: newMax })
         if (error) throw error
       }
       navigate(`/runde/${gameId}/charakter/${id}`, { replace: true })
