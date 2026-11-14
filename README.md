@@ -22,6 +22,8 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
   - 15 Zustände aus dem SRD (z. B. vergiftet, liegend) – setzbar von Spieler und Spielleiter
 - **Bibliothek des Spielleiters:** Gegenstände, Karten, Handouts und Effekte mit Bild, Beschreibung und Ordnern
   - Einträge sind versteckt, für alle freigeschaltet oder einzelnen Spielern zugeteilt (Inventar / Effekte)
+  - **Vorschläge beim Tippen** aus dem SRD: Waffen, Rüstungen, Ausrüstung, Tränke, magische Gegenstände
+    und Effekte – mit Werten, Seltenheit und Dauer
   - Spieler sehen nur, was für sie freigeschaltet ist – live, ohne Neuladen
   - „🎁 Geben“ direkt an der Kachel oder auf dem Charakterbogen – mit Sicherheitsfrage
   - Spieler bekommen eine animierte Einblendung, wenn sie etwas erhalten

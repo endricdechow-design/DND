@@ -22,7 +22,10 @@ export default function LibraryCard({ item, assignedNames, onOpen, onToggleVisib
           <div className="flex h-20 w-full items-center justify-center bg-stone-900/60 text-4xl">{type.icon}</div>
         )}
         <div className="flex flex-1 flex-col gap-1 p-3">
-          <p className="font-display font-bold leading-tight text-stone-100">{item.name}</p>
+          <p className="flex items-start justify-between gap-2">
+            <span className="font-display font-bold leading-tight text-stone-100">{item.name}</span>
+            {item.data?.stat && <span className="shrink-0 rounded bg-stone-800 px-2 py-0.5 text-xs text-amber-200">{item.data.stat}</span>}
+          </p>
           <p className="text-xs text-stone-500">
             {type.icon} {type.name}
             {r && <span className={`ml-1 ${r.color}`}>· {r.name}</span>}

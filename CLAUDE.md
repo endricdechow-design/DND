@@ -18,6 +18,8 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   `GiftNotifier.jsx` = globale Einblendung bei neuen Zuteilungen)
 - `src/data/srd.js` – Regeldaten (Völker, Klassen, Fertigkeiten, Rüstungen …); `src/lib/character.js` – alle Berechnungen
   (`deriveCharacter(row)`). Abgeleitete Werte (TP-Maximum, RK, Boni) werden **nie** gespeichert, sondern immer berechnet.
+- `src/data/catalog.js` – Vorschlagskatalog für die Bibliothek (`searchCatalog(type, text)`); Einträge mit `stat`
+  (Kurzinfo, landet in `library_items.data.stat` und auf der Kachel)
 - `src/data/levels.js` – Klassenfähigkeiten Stufe 2–20 und Stufen mit Attributserhöhung
 - `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
 - `wrangler.jsonc` – Veröffentlichung über **Cloudflare** (Workers Builds: `npm run build` → `npx wrangler deploy`, Ordner `dist`).

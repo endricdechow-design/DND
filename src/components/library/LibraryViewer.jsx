@@ -33,6 +33,7 @@ export default function LibraryViewer({ item, canUse = false, onUsed, groupOnly 
           {r && <span className={`ml-1 ${r.color}`}>· {r.name}</span>}
         </p>
         <h2 className="title break-words text-2xl sm:text-3xl">{item.name}</h2>
+        {item.data?.stat && <p className="mt-1 inline-block rounded bg-stone-800 px-2 py-0.5 text-sm text-amber-200">{item.data.stat}</p>}
         {item.type === 'effect' && item.data?.duration && <p className="text-sm text-amber-300">⏳ Dauer: {item.data.duration}</p>}
       </div>
       {item.image_url && (
