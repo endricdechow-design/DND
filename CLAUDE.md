@@ -14,6 +14,7 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 ## Struktur
 - `src/lib/` – Supabase-Client, Auth-Kontext (`useAuth()` → `session`, `profile`, `signOut`), Fehlerübersetzung
 - `src/pages/` – eine Datei pro Seite; `src/components/` – wiederverwendbare Bausteine
+- `netlify.toml` – Build-Einstellungen für das automatische Veröffentlichen (Ordner `dist`)
 - `supabase/migrations/NNN_name.sql` – nummerierte, **idempotente** SQL-Skripte, die der Nutzer selbst im Supabase SQL Editor ausführt.
   Neue Änderungen = neue Datei, alte nie umschreiben. Nach dem Pushen dem Nutzer sagen, welche Datei er ausführen muss.
 

@@ -1,0 +1,13 @@
+# Einstellungen für Netlify (überschreiben die Einstellungen auf der Netlify-Webseite)
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Alle Adressen (z. B. /runde/123) an die App weiterleiten
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
