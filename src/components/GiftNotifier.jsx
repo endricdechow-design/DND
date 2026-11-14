@@ -13,6 +13,8 @@ const TEXT = {
 /**
  * Hört im Hintergrund zu: Teilt der Spielleiter dem eingeloggten Spieler etwas zu,
  * erscheint eine animierte Einblendung – egal auf welcher Seite man gerade ist.
+ * Doppelt abgesichert: Live-Verbindung + regelmäßiges Nachschauen (falls die
+ * Verbindung z. B. am Handy eingeschlafen ist).
  */
 export default function GiftNotifier() {
   const { profile } = useAuth()
@@ -20,24 +22,94 @@ export default function GiftNotifier() {
   const [gifts, setGifts] = useState([]) // Warteschlange, die erste wird angezeigt
 
   useEffect(() => {
+    let stopped = false
+    const storageKey = `gifts-seen-${profile.id}`
+    const shown = new Set() // schon angezeigte Zuteilungen (Eintrag + Zeitpunkt)
+    let lastSeen = null // Zeitstempel (vom Server) der neuesten bekannten Zuteilung
+
+    const remember = (createdAt) => {
+      if (!lastSeen || createdAt > lastSeen) {
+        lastSeen = createdAt
+        try {
+          localStorage.setItem(storageKey, createdAt)
+        } catch {
+          // Speichern nicht möglich (z. B. privater Modus) – nicht schlimm
+        }
+      }
+    }
+
+    async function showGift(row) {
+      const key = `${row.item_id}|${row.created_at}`
+      if (shown.has(key)) return
+      shown.add(key)
+      remember(row.created_at)
+      const { data: item } = await supabase
+        .from('library_items')
+        .select('id, game_id, type, name, image_url')
+        .eq('id', row.item_id)
+        .maybeSingle()
+      if (!item || stopped) return
+      setGifts((list) => [...list, item])
+      navigator.vibrate?.([120, 60, 120]) // kleines Brummen am Handy
+    }
+
+    // Absicherung: selbst nachschauen, ob seit dem letzten Mal etwas dazukam
+    async function check() {
+      if (!lastSeen) return
+      const { data } = await supabase
+        .from('library_assignments')
+        .select('item_id, created_at')
+        .eq('user_id', profile.id)
+        .gt('created_at', lastSeen)
+        .order('created_at')
+      for (const row of data ?? []) await showGift(row)
+    }
+
+    async function start() {
+      let stored = null
+      try {
+        stored = localStorage.getItem(storageKey)
+      } catch {
+        stored = null
+      }
+      if (stored) {
+        // Geschenke zeigen, die kamen, während die App geschlossen war
+        lastSeen = stored
+        await check()
+      } else {
+        // Erster Start: alles Bisherige gilt als schon gesehen
+        const { data } = await supabase
+          .from('library_assignments')
+          .select('created_at')
+          .eq('user_id', profile.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+        remember(data?.[0]?.created_at ?? '1970-01-01T00:00:00Z')
+      }
+    }
+    start()
+
+    // 1) Live-Benachrichtigung (sofort)
     const channel = supabase
       .channel(`gifts-${profile.id}-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'library_assignments', filter: `user_id=eq.${profile.id}` },
-        async ({ new: row }) => {
-          const { data: item } = await supabase
-            .from('library_items')
-            .select('id, game_id, type, name, image_url')
-            .eq('id', row.item_id)
-            .maybeSingle()
-          if (!item) return
-          setGifts((list) => [...list, item])
-          navigator.vibrate?.([120, 60, 120]) // kleines Brummen am Handy
-        }
+        ({ new: row }) => showGift(row)
       )
       .subscribe()
+
+    // 2) Alle 10 Sekunden nachschauen und sofort, wenn man zur App zurückkehrt
+    const interval = setInterval(check, 10000)
+    const onVisible = () => document.visibilityState === 'visible' && check()
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
+
     return () => {
+      stopped = true
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
       supabase.removeChannel(channel)
     }
   }, [profile.id])

@@ -30,7 +30,13 @@ export default function OwnedFromLibrary({ gameId, player, canGive }) {
       .channel(`owned-${player.user_id}-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'library_assignments', filter: `user_id=eq.${player.user_id}` }, load)
       .subscribe()
+    // Absicherung, falls die Live-Verbindung eingeschlafen ist
+    const interval = setInterval(load, 15000)
+    const onVisible = () => document.visibilityState === 'visible' && load()
+    document.addEventListener('visibilitychange', onVisible)
     return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
       supabase.removeChannel(channel)
     }
   }, [load, player.user_id])
