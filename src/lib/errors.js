@@ -10,6 +10,12 @@ export function translateError(message = '') {
   if (m.includes('could not find the function') || m.includes('schema cache')) {
     return 'Die Datenbank ist noch nicht eingerichtet. Bitte die SQL-Dateien aus supabase/migrations in Supabase ausführen.'
   }
+  if (m.includes('bucket not found')) {
+    return 'Der Speicherplatz für Bilder fehlt noch. Bitte die Datei supabase/migrations/002_charaktere.sql in Supabase ausführen.'
+  }
+  if (m.includes('relation') && m.includes('does not exist')) {
+    return 'Eine Datenbank-Tabelle fehlt noch. Bitte die neueste SQL-Datei aus supabase/migrations in Supabase ausführen.'
+  }
   if (m.includes('failed to fetch')) return 'Keine Verbindung zum Server. Bist du online?'
   return message || 'Unbekannter Fehler.'
 }
