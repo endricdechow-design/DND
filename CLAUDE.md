@@ -13,12 +13,16 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 
 ## Struktur
 - `src/lib/` – Supabase-Client, Auth-Kontext (`useAuth()` → `session`, `profile`, `signOut`), Fehlerübersetzung
-- `src/pages/` – eine Datei pro Seite; `src/components/` – wiederverwendbare Bausteine
+- `src/pages/` – eine Datei pro Seite; `src/components/` – wiederverwendbare Bausteine (`character/` für den Erschaffungs-Assistenten)
+- `src/data/srd.js` – Regeldaten (Völker, Klassen, Fertigkeiten, Rüstungen …); `src/lib/character.js` – alle Berechnungen
+  (`deriveCharacter(row)`). Abgeleitete Werte (TP-Maximum, RK, Boni) werden **nie** gespeichert, sondern immer berechnet.
+- `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
 - `netlify.toml` – Build-Einstellungen für das automatische Veröffentlichen (Ordner `dist`)
 - `supabase/migrations/NNN_name.sql` – nummerierte, **idempotente** SQL-Skripte, die der Nutzer selbst im Supabase SQL Editor ausführt.
   Neue Änderungen = neue Datei, alte nie umschreiben. Nach dem Pushen dem Nutzer sagen, welche Datei er ausführen muss.
 
 ## Datenmodell & Regeln
+- Tabelle `characters`: ein Charakter pro Spieler und Runde; Kernfelder als Spalten, alles Weitere in `data` (jsonb).
 - Rollen gelten **pro Runde**: `game_members.role` ist `'gm'` (Spielleiter, Ersteller) oder `'player'`.
 - Zugriff über RLS; Hilfsfunktionen `is_game_member(game_id)` und `is_game_master(game_id)` (security definer) nutzen,
   um Rekursion in Policies zu vermeiden. Schreibvorgänge mit Logik (z. B. Code erzeugen) als `security definer`-RPC.

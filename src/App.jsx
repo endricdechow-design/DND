@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { useAuth } from './lib/auth'
 import Layout from './components/Layout'
@@ -5,6 +6,9 @@ import FullscreenMessage from './components/FullscreenMessage'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import LobbyPage from './pages/LobbyPage'
+// Größere Seiten werden erst geladen, wenn man sie öffnet
+const CharacterWizardPage = lazy(() => import('./pages/CharacterWizardPage'))
+const CharacterSheetPage = lazy(() => import('./pages/CharacterSheetPage'))
 
 export default function App() {
   const { session, profile, loading, signOut } = useAuth()
@@ -26,11 +30,16 @@ export default function App() {
 
   return (
     <Layout>
-      <Routes>
+      <Suspense fallback={<p className="title animate-pulse text-center text-xl">Lade …</p>}>
+        <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/runde/:gameId" element={<LobbyPage />} />
+        <Route path="/runde/:gameId/charakter/neu" element={<CharacterWizardPage />} />
+        <Route path="/runde/:gameId/charakter/:characterId" element={<CharacterSheetPage />} />
+        <Route path="/runde/:gameId/charakter/:characterId/bearbeiten" element={<CharacterWizardPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </Layout>
   )
 }

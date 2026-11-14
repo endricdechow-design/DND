@@ -9,16 +9,27 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 - **Einladen:** Jede Runde hat einen 6-stelligen Code, mit dem Spieler beitreten
 - **Live-Lobby:** Neue Spieler erscheinen sofort bei allen in der Teilnehmerliste
 - Spielleiter können Spieler entfernen und die Runde löschen
+- **Charaktere:** Geführte Erschaffung (Volk → Klasse → Attribute → Fertigkeiten → Details) nach SRD 5.1
+  - Werte werden automatisch berechnet: Modifikatoren, TP, RK, Initiative, Übungsbonus, Rettungswürfe, Fertigkeiten
+  - Avatar-Bild hochladen (wird automatisch verkleinert)
+  - Charakterbogen mit Schaden/Heilen/temporären TP, Langer Rast, Notizen und Stufenaufstieg
+  - Der Spielleiter kann alle Charaktere seiner Runde bearbeiten; Änderungen erscheinen live
 
 ## Geplant (in dieser Reihenfolge)
 
 1. ✅ Fundament: Login, Runden, Einladungscode, Live-Lobby
-2. ⬜ Charaktere: Erstellung nach SRD 5.1, Werte automatisch berechnet, Avatar-Bild
+2. ✅ Charaktere: Erstellung nach SRD 5.1, Werte automatisch berechnet, Avatar-Bild
 3. ⬜ Gruppenansicht: Avatar-Köpfe, Klick zeigt Charakterkarte (mit Sichtbarkeitsstufen)
 4. ⬜ Würfel: Würfeln mit gemeinsamem Protokoll
 5. ⬜ Bibliothek des Spielleiters: Karten, Gegenstände, Effekte – freischalten & zuteilen
 6. ⬜ Kampffeld: Raster, Gegner mit Bild, Figuren per Drag & Drop, Initiative
 7. ⬜ Extras: Nebel des Krieges, Abenteuer-Tagebuch, Regelhilfen für Anfänger
+
+## Lizenz der Regelinhalte
+
+Die Spielregeln basieren auf dem *System Reference Document 5.1* von Wizards of the Coast LLC,
+lizenziert unter [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/). Die Texte in der App sind
+eigene, verkürzte deutsche Zusammenfassungen.
 
 ## Technik
 
