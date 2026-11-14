@@ -31,6 +31,10 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   fließt in `deriveCharacter` ein (TP, Attribute). Spieler steigen nur über den Assistenten auf;
   der Spielleiter darf die Stufe im Bearbeiten-Dialog direkt setzen (spätere `levelUps` werden dann verworfen).
 - `data.notes` = öffentliche Notizen (landen in der Gruppenkarte), `data.privateNotes` = nur Besitzer + Spielleiter.
+- Tabellen `library_items` (type: item/map/handout/effect, `visibility` hidden/all, `folder`, `data`) und
+  `library_assignments` (Eintrag ↔ Spieler). Nur der Spielleiter schreibt. Bilder im Bucket `library`, Ordner = game_id.
+  Die Bibliotheksseite sendet nach Änderungen ein Broadcast `changed` auf Kanal `library-<gameId>`, damit Spieler neu laden.
+- `src/lib/images.js` – generisches Verkleinern/Hochladen/Löschen von Bildern (Avatare und Bibliothek nutzen es).
 - Würfeln passiert bewusst am echten Tisch – keine Würfelfunktion einbauen, außer der Nutzer wünscht es.
 - Rollen gelten **pro Runde**: `game_members.role` ist `'gm'` (Spielleiter, Ersteller) oder `'player'`.
 - Zugriff über RLS; Hilfsfunktionen `is_game_member(game_id)` und `is_game_master(game_id)` (security definer) nutzen,

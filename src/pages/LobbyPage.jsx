@@ -279,20 +279,25 @@ function Lobby({ gameId }) {
         )}
       </section>
 
-      {/* Vorschau auf kommende Bereiche */}
-      <section className="card">
-        <h2 className="title mb-4 text-2xl">Bald verfügbar</h2>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {[
-            ['📚', 'Bibliothek', 'Karten, Gegenstände & Effekte'],
-            ['⚔️', 'Kampffeld', 'Raster, Figuren & Initiative'],
-          ].map(([icon, title, text]) => (
-            <div key={title} className="rounded-xl border border-dashed border-stone-700 p-4 opacity-70">
-              <div className="text-2xl" aria-hidden>{icon}</div>
-              <p className="mt-1 font-display font-bold text-stone-200">{title}</p>
-              <p className="text-xs text-stone-500">{text}</p>
+      {/* Bereiche der Runde */}
+      <section className="grid gap-4 sm:grid-cols-2">
+        <Link to={`/runde/${gameId}/bibliothek`} className="card flex items-center gap-4 transition hover:border-amber-600">
+          <span className="text-4xl" aria-hidden>📚</span>
+          <div className="min-w-0">
+            <p className="title text-xl">Bibliothek</p>
+            <p className="text-sm text-stone-400">
+              {isGM ? 'Gegenstände, Karten, Handouts & Effekte verwalten' : 'Inventar, Karten, Handouts & Effekte'}
+            </p>
+          </div>
+        </Link>
+        <div className="rounded-2xl border border-dashed border-stone-700 p-6 opacity-70">
+          <div className="flex items-center gap-4">
+            <span className="text-4xl" aria-hidden>⚔️</span>
+            <div>
+              <p className="font-display text-xl font-bold text-stone-300">Kampffeld</p>
+              <p className="text-sm text-stone-500">Bald verfügbar: Raster, Figuren & Initiative</p>
             </div>
-          ))}
+          </div>
         </div>
       </section>
 

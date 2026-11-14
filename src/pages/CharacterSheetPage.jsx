@@ -11,6 +11,7 @@ import Avatar from '../components/Avatar'
 import GameMasterBanner from '../components/GameMasterBanner'
 import PartyCardDetails from '../components/party/PartyCardDetails'
 import { ConditionPicker } from '../components/party/Conditions'
+import OwnedFromLibrary from '../components/library/OwnedFromLibrary'
 
 export default function CharacterSheetPage() {
   const { gameId, characterId } = useParams()
@@ -241,6 +242,8 @@ function Sheet({ gameId, characterId }) {
           {c.background?.feature && <TraitBlock title={`Hintergrund: ${c.background.name}`} items={[c.background.feature]} />}
         </section>
       </div>
+
+      <OwnedFromLibrary gameId={gameId} userId={character.user_id} />
 
       {c.level > 1 && (
         <LevelHistory character={character} derived={c} canEdit={canEdit} onUndo={undoLastLevel} />

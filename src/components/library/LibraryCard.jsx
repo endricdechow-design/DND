@@ -1,0 +1,57 @@
+import { useState } from 'react'
+import { libraryType, rarity } from '../../data/library'
+
+/**
+ * Kachel für einen Bibliothekseintrag.
+ * assignedNames: Namen der zugeteilten Spieler (nur für den Spielleiter)
+ * onToggleVisibility: schneller Freischalten/Verstecken-Knopf (nur für den Spielleiter)
+ */
+export default function LibraryCard({ item, assignedNames, onOpen, onToggleVisibility }) {
+  const type = libraryType(item.type)
+  const r = item.type === 'item' ? rarity(item.data?.rarity) : null
+  const isGMView = Boolean(onToggleVisibility)
+  const [imageFailed, setImageFailed] = useState(false)
+
+  return (
+    <div className="flex flex-col overflow-hidden rounded-xl border border-stone-800 bg-stone-950/50 transition hover:border-amber-700">
+      <button type="button" onClick={onOpen} className="flex flex-1 flex-col text-left">
+        {item.image_url && !imageFailed ? (
+          <img src={item.image_url} alt={item.name} loading="lazy" onError={() => setImageFailed(true)}
+            className="h-32 w-full bg-stone-900 object-cover" />
+        ) : (
+          <div className="flex h-20 w-full items-center justify-center bg-stone-900/60 text-4xl">{type.icon}</div>
+        )}
+        <div className="flex flex-1 flex-col gap-1 p-3">
+          <p className="font-display font-bold leading-tight text-stone-100">{item.name}</p>
+          <p className="text-xs text-stone-500">
+            {type.icon} {type.name}
+            {r && <span className={`ml-1 ${r.color}`}>· {r.name}</span>}
+            {item.type === 'effect' && item.data?.duration && <span className="ml-1">· {item.data.duration}</span>}
+          </p>
+          {isGMView && (
+            <p className="mt-auto pt-1 text-xs">
+              {item.visibility === 'all' ? (
+                <span className="text-emerald-300">👥 Für alle freigeschaltet</span>
+              ) : assignedNames?.length ? (
+                <span className="text-violet-300">👤 {assignedNames.join(', ')}</span>
+              ) : (
+                <span className="text-stone-500">🔒 Versteckt</span>
+              )}
+            </p>
+          )}
+        </div>
+      </button>
+      {isGMView && (
+        <button
+          type="button"
+          onClick={onToggleVisibility}
+          className={`border-t border-stone-800 px-3 py-2 text-sm transition ${
+            item.visibility === 'all' ? 'text-stone-400 hover:bg-stone-800' : 'text-amber-300 hover:bg-amber-950/40'
+          }`}
+        >
+          {item.visibility === 'all' ? '🔒 Wieder verstecken' : '🔓 Für alle freischalten'}
+        </button>
+      )}
+    </div>
+  )
+}

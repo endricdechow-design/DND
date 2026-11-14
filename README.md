@@ -20,13 +20,16 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
   - Mitspieler sehen nur Name, Bild, Volk, Klasse, Stufe, Gesundheit, Zustände und öffentliche Notizen
   - Den vollen Bogen und die privaten Notizen sehen nur der Spieler selbst und der Spielleiter
   - 15 Zustände aus dem SRD (z. B. vergiftet, liegend) – setzbar von Spieler und Spielleiter
+- **Bibliothek des Spielleiters:** Gegenstände, Karten, Handouts und Effekte mit Bild, Beschreibung und Ordnern
+  - Einträge sind versteckt, für alle freigeschaltet oder einzelnen Spielern zugeteilt (Inventar / Effekte)
+  - Spieler sehen nur, was für sie freigeschaltet ist – live, ohne Neuladen
 
 ## Geplant (in dieser Reihenfolge)
 
 1. ✅ Fundament: Login, Runden, Einladungscode, Live-Lobby
 2. ✅ Charaktere: Erstellung nach SRD 5.1, Werte automatisch berechnet, Avatar-Bild
 3. ✅ Gruppenansicht: Avatar-Köpfe, Klick zeigt Charakterkarte (mit Sichtbarkeitsstufen)
-4. ⬜ Bibliothek des Spielleiters: Karten, Gegenstände, Effekte – freischalten & zuteilen
+4. ✅ Bibliothek des Spielleiters: Karten, Gegenstände, Effekte – freischalten & zuteilen
 5. ⬜ Kampffeld: Raster, Gegner mit Bild, Figuren per Drag & Drop, Initiative
 6. ⬜ Extras: Nebel des Krieges, Abenteuer-Tagebuch, Regelhilfen für Anfänger
 
