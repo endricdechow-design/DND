@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
+import { useTimedQueue } from '../lib/useTimedQueue'
 
 /**
  * Für Spielleiter: kurze Meldung, wenn in einer ihrer Runden etwas passiert
@@ -8,7 +9,7 @@ import { useAuth } from '../lib/auth'
  */
 export default function GameLogNotifier() {
   const { profile } = useAuth()
-  const [messages, setMessages] = useState([])
+  const { current, push, dismiss, duration } = useTimedQueue(10000)
 
   useEffect(() => {
     let stopped = false
@@ -19,8 +20,10 @@ export default function GameLogNotifier() {
       if (stopped || shown.has(row.id)) return
       shown.add(row.id)
       if (!lastSeen || row.created_at > lastSeen) lastSeen = row.created_at
+      // Andere Seiten (z. B. Bibliothek) informieren, damit sie neu laden
+      window.dispatchEvent(new CustomEvent('dnd:game-log', { detail: row }))
       if (row.user_id === profile.id) return // eigene Aktionen nicht melden
-      setMessages((list) => [...list, row])
+      push(row.id, row)
     }
 
     async function check() {
@@ -49,22 +52,17 @@ export default function GameLogNotifier() {
       document.removeEventListener('visibilitychange', onVisible)
       supabase.removeChannel(channel)
     }
-  }, [profile.id])
+  }, [profile.id, push])
 
-  const message = messages[0]
-  useEffect(() => {
-    if (!message) return
-    const timer = setTimeout(() => setMessages((list) => list.slice(1)), 8000)
-    return () => clearTimeout(timer)
-  }, [message])
-
-  if (!message) return null
+  if (!current) return null
+  const message = current.value
   return (
     <div className="pointer-events-none fixed inset-x-0 top-20 z-[60] flex justify-center px-4" role="status" aria-live="polite">
-      <div key={message.id} className="gift-toast pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl border-2 border-violet-500 bg-stone-900/95 p-4 backdrop-blur">
+      <div key={current.key} className="gift-toast pointer-events-auto relative flex w-full max-w-sm items-center gap-3 overflow-hidden rounded-2xl border-2 border-violet-500 bg-stone-900/95 p-4 backdrop-blur">
+        <span className="toast-countdown absolute inset-x-0 bottom-0 h-1 bg-violet-400/70" style={{ animationDuration: `${duration}ms` }} />
         <span className="text-3xl" aria-hidden>🧪</span>
         <p className="min-w-0 flex-1 text-stone-100">{message.text}</p>
-        <button type="button" onClick={() => setMessages((list) => list.slice(1))} className="rounded-full px-2 text-stone-400 hover:text-stone-100" aria-label="Schließen">
+        <button type="button" onClick={dismiss} className="rounded-full px-2 text-stone-400 hover:text-stone-100" aria-label="Schließen">
           ✕
         </button>
       </div>

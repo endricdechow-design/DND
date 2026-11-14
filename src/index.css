@@ -83,3 +83,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .gift-toast, .gift-icon, .gift-sparkle { animation: none; }
 }
+
+/* Ablaufbalken für Meldungen (läuft in 10 s von voll auf leer) */
+@keyframes toast-countdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+.toast-countdown { transform-origin: left; animation: toast-countdown linear forwards; }

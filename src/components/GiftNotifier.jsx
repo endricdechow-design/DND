@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
+import { useTimedQueue } from '../lib/useTimedQueue'
 
 const TEXT = {
   item: { icon: '🎁', title: 'Du hast etwas erhalten!' },
@@ -19,7 +20,7 @@ const TEXT = {
 export default function GiftNotifier() {
   const { profile } = useAuth()
   const navigate = useNavigate()
-  const [gifts, setGifts] = useState([]) // Warteschlange, die erste wird angezeigt
+  const { current, count, push, dismiss, duration } = useTimedQueue(10000)
 
   useEffect(() => {
     let stopped = false
@@ -49,7 +50,7 @@ export default function GiftNotifier() {
         .eq('id', row.item_id)
         .maybeSingle()
       if (!item || stopped) return
-      setGifts((list) => [...list, item])
+      push(key, item)
       navigator.vibrate?.([120, 60, 120]) // kleines Brummen am Handy
     }
 
@@ -112,24 +113,16 @@ export default function GiftNotifier() {
       window.removeEventListener('focus', onVisible)
       supabase.removeChannel(channel)
     }
-  }, [profile.id])
+  }, [profile.id, push])
 
-  const gift = gifts[0]
-
-  // Nach 10 Sekunden automatisch ausblenden
-  useEffect(() => {
-    if (!gift) return
-    const timer = setTimeout(() => setGifts((list) => list.slice(1)), 10000)
-    return () => clearTimeout(timer)
-  }, [gift])
-
-  if (!gift) return null
+  if (!current) return null
+  const gift = current.value
   const text = TEXT[gift.type] ?? TEXT.item
-  const dismiss = () => setGifts((list) => list.slice(1))
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex justify-center px-4" role="status" aria-live="polite">
-      <div key={gift.id} className="gift-toast pointer-events-auto relative w-full max-w-sm rounded-2xl border-2 border-amber-500 bg-stone-900/95 p-4 backdrop-blur">
+      <div key={current.key} className="gift-toast pointer-events-auto relative w-full max-w-sm rounded-2xl border-2 border-amber-500 bg-stone-900/95 p-4 backdrop-blur">
+        <span className="toast-countdown absolute inset-x-3 bottom-1 h-1 rounded-full bg-amber-400/70" style={{ animationDuration: `${duration}ms` }} />
         {/* Funkeln */}
         {[8, 24, 42, 60, 76, 90].map((left, i) => (
           <span
@@ -167,7 +160,7 @@ export default function GiftNotifier() {
         >
           Ansehen →
         </button>
-        {gifts.length > 1 && <p className="relative mt-2 text-center text-xs text-stone-400">+ {gifts.length - 1} weitere</p>}
+        {count > 1 && <p className="relative mt-2 text-center text-xs text-stone-400">+ {count - 1} weitere</p>}
       </div>
     </div>
   )

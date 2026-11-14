@@ -76,7 +76,19 @@ function Library({ gameId }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'library_assignments', filter: `game_id=eq.${gameId}` }, () => load())
       .subscribe()
     channelRef.current = channel
+
+    // Jemand hat etwas benutzt (Meldung aus dem Protokoll) → neu laden
+    const onGameLog = (e) => e.detail?.game_id === gameId && load()
+    window.addEventListener('dnd:game-log', onGameLog)
+    // Absicherung: regelmäßig und beim Zurückkehren zur Seite neu laden
+    const interval = setInterval(load, 20000)
+    const onVisible = () => document.visibilityState === 'visible' && load()
+    document.addEventListener('visibilitychange', onVisible)
+
     return () => {
+      window.removeEventListener('dnd:game-log', onGameLog)
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
       supabase.removeChannel(channel)
       channelRef.current = null
     }
