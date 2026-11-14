@@ -20,6 +20,7 @@ export default function Layout({ children }) {
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
+      <footer className="pb-6 text-center text-xs text-stone-600">Version {__APP_VERSION__}</footer>
       <GiftNotifier />
       <GameLogNotifier />
     </div>

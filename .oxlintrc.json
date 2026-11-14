@@ -13,5 +13,8 @@
       }
     ],
     "react/set-state-in-effect": "off"
+  },
+  "globals": {
+    "__APP_VERSION__": "readonly"
   }
 }

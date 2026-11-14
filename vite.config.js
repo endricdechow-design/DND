@@ -7,4 +7,8 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   // React + Supabase sind zusammen ca. 500 kB – das ist okay, Warnung erst ab 700 kB
   build: { chunkSizeWarningLimit: 700 },
+  // Versionsnummer (Commit) für die Anzeige unten auf der Seite – Netlify setzt COMMIT_REF
+  define: {
+    __APP_VERSION__: JSON.stringify((process.env.COMMIT_REF ?? 'lokal').slice(0, 7)),
+  },
 })
