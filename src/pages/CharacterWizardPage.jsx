@@ -162,6 +162,8 @@ function Wizard({ gameId, characterId }) {
       }
 
       const data = {
+        // Bestehende Angaben (z. B. Stufenaufstiege, private Notizen) behalten
+        ...(original?.data ?? {}),
         raceChoices: draft.raceChoices,
         classSkills: draft.classSkills,
         abilityMethod: draft.abilityMethod,
@@ -173,7 +175,6 @@ function Wizard({ gameId, characterId }) {
         armor: draft.armor,
         shield: draft.shield,
         notes: draft.notes,
-        privateNotes: draft.privateNotes ?? '',
       }
       const row = { name: draft.name.trim(), level: draft.level, race: draft.race, class: draft.class, avatar_url: avatarUrl, data }
       const newMax = deriveCharacter(row).hpMax
@@ -203,7 +204,7 @@ function Wizard({ gameId, characterId }) {
 
   const preview = deriveCharacter({
     name: draft.name, level: draft.level, race: draft.race, class: draft.class,
-    data: { ...draft },
+    data: { ...draft, levelUps: original?.data?.levelUps ?? [] },
   })
 
   return (
@@ -434,8 +435,15 @@ function Wizard({ gameId, characterId }) {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="label" htmlFor="level">Stufe</label>
-                    <input id="level" type="number" min={1} max={20} className="input" value={draft.level}
-                      onChange={(e) => update({ level: Math.min(20, Math.max(1, Number(e.target.value) || 1)) })} />
+                    {isEdit ? (
+                      <>
+                        <p id="level" className="input bg-stone-900/60 text-stone-400">Stufe {draft.level}</p>
+                        <p className="mt-1 text-xs text-stone-500">Aufsteigen über „⬆️ Stufe aufsteigen“ auf dem Bogen.</p>
+                      </>
+                    ) : (
+                      <input id="level" type="number" min={1} max={20} className="input" value={draft.level}
+                        onChange={(e) => update({ level: Math.min(20, Math.max(1, Number(e.target.value) || 1)) })} />
+                    )}
                   </div>
                   <div>
                     <label className="label" htmlFor="alignment">Gesinnung (optional)</label>

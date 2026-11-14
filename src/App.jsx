@@ -9,6 +9,7 @@ import LobbyPage from './pages/LobbyPage'
 // Größere Seiten werden erst geladen, wenn man sie öffnet
 const CharacterWizardPage = lazy(() => import('./pages/CharacterWizardPage'))
 const CharacterSheetPage = lazy(() => import('./pages/CharacterSheetPage'))
+const LevelUpPage = lazy(() => import('./pages/LevelUpPage'))
 
 export default function App() {
   const { session, profile, loading, signOut } = useAuth()
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/runde/:gameId/charakter/neu" element={<CharacterWizardPage />} />
         <Route path="/runde/:gameId/charakter/:characterId" element={<CharacterSheetPage />} />
         <Route path="/runde/:gameId/charakter/:characterId/bearbeiten" element={<CharacterWizardPage />} />
+        <Route path="/runde/:gameId/charakter/:characterId/aufstieg" element={<LevelUpPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </Suspense>

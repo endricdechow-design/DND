@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
 import { removeAvatar } from '../lib/avatars'
-import { abilityShort } from '../data/srd'
+import { ABILITIES, abilityShort } from '../data/srd'
+import { featuresUpTo } from '../data/levels'
 import { deriveCharacter, formatMeters, formatMod } from '../lib/character'
 import Avatar from '../components/Avatar'
 import GameMasterBanner from '../components/GameMasterBanner'
@@ -19,6 +20,8 @@ export default function CharacterSheetPage() {
 function Sheet({ gameId, characterId }) {
   const { profile } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const notice = location.state?.notice
   const [character, setCharacter] = useState(null)
   const [partyCard, setPartyCard] = useState(null) // eingeschränkte Ansicht für Mitspieler
   const [isGM, setIsGM] = useState(false)
@@ -105,6 +108,17 @@ function Sheet({ gameId, characterId }) {
     }
   }
 
+  // Letzten Stufenaufstieg zurücknehmen
+  async function undoLastLevel() {
+    const last = (data.levelUps ?? []).find((lu) => lu.level === c.level)
+    if (!last) return
+    if (!confirm(`Aufstieg auf Stufe ${c.level} rückgängig machen?`)) return
+    const newData = { ...data, levelUps: data.levelUps.filter((lu) => lu.level < c.level) }
+    const prev = deriveCharacter({ ...character, level: c.level - 1, data: newData })
+    const hpCurrent = Math.max(0, Math.min(prev.hpMax, character.hp_current - (c.hpMax - prev.hpMax)))
+    await saveFields({ level: c.level - 1, data: newData, hp_current: hpCurrent, hp_max: prev.hpMax })
+  }
+
   async function deleteCharacter() {
     if (!confirm(`„${character.name}“ wirklich endgültig löschen?`)) return
     const { error } = await supabase.from('characters').delete().eq('id', characterId)
@@ -139,7 +153,14 @@ function Sheet({ gameId, characterId }) {
             {[backgroundName, data.alignment, `gespielt von ${character.profiles?.username ?? '?'}`].filter(Boolean).join(' · ')}
           </p>
         </div>
+        {canEdit && c.level < 20 && (
+          <Link to={`/runde/${gameId}/charakter/${characterId}/aufstieg`} className="btn-primary shrink-0">
+            ⬆️ Stufe aufsteigen
+          </Link>
+        )}
       </section>
+
+      {notice && <p className="alert-info">{notice}</p>}
 
       {error && <p className="alert-error">{error}</p>}
 
@@ -210,11 +231,20 @@ function Sheet({ gameId, characterId }) {
               </p>
             </InfoBlock>
           )}
-          <TraitBlock title={`Klasse: ${c.cls?.name}`} items={c.cls?.features ?? []} />
+          {c.sneakAttack && (
+            <InfoBlock title="Hinterhältiger Angriff">
+              <p className="text-sm text-stone-300">Aktuell <b>{c.sneakAttack}</b> zusätzlicher Schaden (1× pro Zug).</p>
+            </InfoBlock>
+          )}
+          <TraitBlock title={`Klasse: ${c.cls?.name}`} items={[...(c.cls?.features ?? []), ...featuresUpTo(character.class, c.level)]} />
           <TraitBlock title={`Volk: ${c.race?.name}`} items={c.race?.traits ?? []} />
           {c.background?.feature && <TraitBlock title={`Hintergrund: ${c.background.name}`} items={[c.background.feature]} />}
         </section>
       </div>
+
+      {c.level > 1 && (
+        <LevelHistory character={character} derived={c} canEdit={canEdit} onUndo={undoLastLevel} />
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Notes
@@ -341,6 +371,42 @@ function Notes({ character, field, title, hint, placeholder, onSave }) {
           Speichern
         </button>
       </div>
+    </section>
+  )
+}
+
+// ---------------------------------------------------------------------
+// Stufenverlauf mit Rückgängig für den letzten Aufstieg
+// ---------------------------------------------------------------------
+function LevelHistory({ character, derived, canEdit, onUndo }) {
+  const levelUps = derived.levelUps
+  const abilityName = (key) => ABILITIES.find((a) => a.key === key)?.short ?? key
+  const rows = []
+  for (let lvl = 2; lvl <= derived.level; lvl++) {
+    const lu = levelUps.find((l) => l.level === lvl)
+    const hp = lu?.hpRoll ? `TP gewürfelt: ${lu.hpRoll}` : 'TP: Durchschnitt'
+    const asi = lu?.asi ? Object.entries(lu.asi).map(([k, v]) => `${abilityName(k)} +${v}`).join(', ') : null
+    rows.push({ lvl, text: [hp, asi].filter(Boolean).join(' · '), canUndo: Boolean(lu) && lvl === derived.level })
+  }
+  return (
+    <section className="card">
+      <h2 className="title mb-3 text-xl">Stufenverlauf</h2>
+      <ul className="space-y-1.5 text-sm">
+        <li className="text-stone-400"><span className="font-semibold text-stone-200">Stufe 1:</span> Erschaffung</li>
+        {rows.map((row) => (
+          <li key={row.lvl} className="flex flex-wrap items-center gap-x-3 text-stone-400">
+            <span><span className="font-semibold text-stone-200">Stufe {row.lvl}:</span> {row.text}</span>
+            {canEdit && row.canUndo && (
+              <button onClick={onUndo} className="text-xs text-stone-500 underline hover:text-red-300">
+                rückgängig
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {character.level > 1 && !levelUps.length && (
+        <p className="mt-2 text-xs text-stone-500">Frühere Stufen wurden ohne Assistent eingetragen (Durchschnitts-TP).</p>
+      )}
     </section>
   )
 }

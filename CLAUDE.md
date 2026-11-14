@@ -16,6 +16,7 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - `src/pages/` – eine Datei pro Seite; `src/components/` – wiederverwendbare Bausteine (`character/` für den Erschaffungs-Assistenten, `party/` für die Gruppenansicht, `Modal.jsx` für Pop-ups)
 - `src/data/srd.js` – Regeldaten (Völker, Klassen, Fertigkeiten, Rüstungen …); `src/lib/character.js` – alle Berechnungen
   (`deriveCharacter(row)`). Abgeleitete Werte (TP-Maximum, RK, Boni) werden **nie** gespeichert, sondern immer berechnet.
+- `src/data/levels.js` – Klassenfähigkeiten Stufe 2–20 und Stufen mit Attributserhöhung
 - `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
 - `netlify.toml` – Build-Einstellungen für das automatische Veröffentlichen (Ordner `dist`)
 - `supabase/migrations/NNN_name.sql` – nummerierte, **idempotente** SQL-Skripte, die der Nutzer selbst im Supabase SQL Editor ausführt.
@@ -26,6 +27,8 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   Lesbar **nur für Besitzer und Spielleiter**. `hp_max` ist ein Cache (App schreibt den berechneten Wert) für den Lebensbalken.
 - Tabelle `party_cards`: öffentliche Gruppenkarte je Charakter (Name, Bild, Stufe, `hp_percent`, `conditions`, `public_notes`),
   lesbar für alle Mitglieder, wird **nur per Trigger** aus `characters` befüllt – nie direkt schreiben.
+- `data.levelUps` = Liste der Aufstiege `{ level, hpRoll (null = Durchschnitt), asi?: { dex: 1, … }, date }`;
+  fließt in `deriveCharacter` ein (TP, Attribute). Stufe nur über den Aufstiegs-Assistenten ändern.
 - `data.notes` = öffentliche Notizen (landen in der Gruppenkarte), `data.privateNotes` = nur Besitzer + Spielleiter.
 - Würfeln passiert bewusst am echten Tisch – keine Würfelfunktion einbauen, außer der Nutzer wünscht es.
 - Rollen gelten **pro Runde**: `game_members.role` ist `'gm'` (Spielleiter, Ersteller) oder `'player'`.

@@ -12,7 +12,9 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 - **Charaktere:** Geführte Erschaffung (Volk → Klasse → Attribute → Fertigkeiten → Details) nach SRD 5.1
   - Werte werden automatisch berechnet: Modifikatoren, TP, RK, Initiative, Übungsbonus, Rettungswürfe, Fertigkeiten
   - Avatar-Bild hochladen (wird automatisch verkleinert)
-  - Charakterbogen mit Schaden/Heilen/temporären TP, Langer Rast, Notizen und Stufenaufstieg
+  - Charakterbogen mit Schaden/Heilen/temporären TP, Langer Rast und Notizen
+  - **Stufenaufstieg-Assistent:** gewürfelte oder durchschnittliche TP, Attributserhöhungen,
+    Übersicht der neuen Klassenfähigkeiten (Stufe 2–20), Stufenverlauf mit „rückgängig“
   - Der Spielleiter kann alle Charaktere seiner Runde bearbeiten; Änderungen erscheinen live
 - **Gruppenansicht:** Avatar-Leiste mit Lebensbalken und Zuständen; Klick öffnet die Charakterkarte
   - Mitspieler sehen nur Name, Bild, Volk, Klasse, Stufe, Gesundheit, Zustände und öffentliche Notizen

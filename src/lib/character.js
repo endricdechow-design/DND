@@ -20,28 +20,45 @@ export const proficiencyBonus = (level) => Math.ceil(level / 4) + 1
 export const formatMeters = (m) => `${String(m).replace('.', ',')} m`
 
 /** Endgültige Attributswerte = Grundwerte + Volksboni (+ frei gewählte Boni) */
-export function finalAbilities(baseAbilities, raceKey, raceChoices = {}) {
+export function finalAbilities(baseAbilities, raceKey, raceChoices = {}, levelUps = []) {
   const race = byKey(RACES, raceKey)
   const result = {}
   for (const { key } of ABILITIES) {
     let score = Number(baseAbilities?.[key]) || 0
     score += race?.bonuses?.[key] ?? 0
-    if (race?.chooseAbilities && raceChoices.abilities?.includes(key)) score += race.chooseAbilities.amount
+    if (race?.chooseAbilities && raceChoices?.abilities?.includes(key)) score += race.chooseAbilities.amount
+    // Attributserhöhungen aus Stufenaufstiegen (Maximum 20)
+    const asi = levelUps.reduce((sum, lu) => sum + (lu.asi?.[key] ?? 0), 0)
+    if (asi) score = Math.min(20, score + asi)
     result[key] = score
   }
   return result
 }
 
-/** Maximale Trefferpunkte (Stufe 1: voller Würfel, danach Durchschnitt) */
-export function maxHitPoints({ classKey, raceKey, level, conScore }) {
+/** Durchschnittlicher TP-Gewinn pro Stufe (ohne KON) */
+export const averageHitDie = (hitDie) => Math.floor(hitDie / 2) + 1
+
+/** TP-Gewinn einer Stufe: Würfel (oder Durchschnitt) + KON-Mod, mindestens 1 (+ Zwergenbonus) */
+export function hpGainForLevel({ classKey, raceKey, conScore, roll }) {
   const cls = byKey(CLASSES, classKey)
   const race = byKey(RACES, raceKey)
   if (!cls) return 0
-  const con = abilityMod(conScore)
-  const perLevelAfterFirst = Math.floor(cls.hitDie / 2) + 1
-  let hp = Math.max(1, cls.hitDie + con)
-  for (let lvl = 2; lvl <= level; lvl++) hp += Math.max(1, perLevelAfterFirst + con)
-  hp += (race?.hpPerLevel ?? 0) * level
+  const base = roll ?? averageHitDie(cls.hitDie)
+  return Math.max(1, base + abilityMod(conScore)) + (race?.hpPerLevel ?? 0)
+}
+
+/** Maximale Trefferpunkte (Stufe 1: voller Würfel, danach Durchschnitt) */
+export function maxHitPoints({ classKey, raceKey, level, conScore, levelUps = [] }) {
+  const cls = byKey(CLASSES, classKey)
+  const race = byKey(RACES, raceKey)
+  if (!cls) return 0
+  // Stufe 1: voller Trefferwürfel
+  let hp = Math.max(1, cls.hitDie + abilityMod(conScore)) + (race?.hpPerLevel ?? 0)
+  // Ab Stufe 2: gewürfelter Wert aus dem Stufenaufstieg, sonst Durchschnitt
+  for (let lvl = 2; lvl <= level; lvl++) {
+    const roll = levelUps.find((lu) => lu.level === lvl)?.hpRoll ?? null
+    hp += hpGainForLevel({ classKey, raceKey, conScore, roll })
+  }
   return hp
 }
 
@@ -86,7 +103,8 @@ export function deriveCharacter(character) {
   const background = byKey(BACKGROUNDS, data.background)
   const level = character.level ?? 1
 
-  const abilities = finalAbilities(data.baseAbilities, character.race, data.raceChoices)
+  const levelUps = (data.levelUps ?? []).filter((lu) => lu.level <= level)
+  const abilities = finalAbilities(data.baseAbilities, character.race, data.raceChoices, levelUps)
   const mods = Object.fromEntries(Object.entries(abilities).map(([k, v]) => [k, abilityMod(v)]))
   const prof = proficiencyBonus(level)
   const skillSet = proficientSkills(data, character.race)
@@ -131,7 +149,9 @@ export function deriveCharacter(character) {
     initiative: mods.dex,
     speed: race?.speed ?? 9,
     passivePerception: 10 + (perception?.bonus ?? 0),
-    hpMax: maxHitPoints({ classKey: character.class, raceKey: character.race, level, conScore: abilities.con }),
+    hpMax: maxHitPoints({ classKey: character.class, raceKey: character.race, level, conScore: abilities.con, levelUps }),
+    levelUps,
+    sneakAttack: character.class === 'rogue' ? `${Math.ceil(level / 2)}W6` : null,
     ac: armorClass({ classKey: character.class, armorKey: data.armor, shield: data.shield, abilities }),
     armor: byKey(ARMORS, data.armor) ?? ARMORS[0],
     breathWeapon,
