@@ -28,7 +28,8 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - Tabelle `party_cards`: öffentliche Gruppenkarte je Charakter (Name, Bild, Stufe, `hp_percent`, `conditions`, `public_notes`),
   lesbar für alle Mitglieder, wird **nur per Trigger** aus `characters` befüllt – nie direkt schreiben.
 - `data.levelUps` = Liste der Aufstiege `{ level, hpRoll (null = Durchschnitt), asi?: { dex: 1, … }, date }`;
-  fließt in `deriveCharacter` ein (TP, Attribute). Stufe nur über den Aufstiegs-Assistenten ändern.
+  fließt in `deriveCharacter` ein (TP, Attribute). Spieler steigen nur über den Assistenten auf;
+  der Spielleiter darf die Stufe im Bearbeiten-Dialog direkt setzen (spätere `levelUps` werden dann verworfen).
 - `data.notes` = öffentliche Notizen (landen in der Gruppenkarte), `data.privateNotes` = nur Besitzer + Spielleiter.
 - Würfeln passiert bewusst am echten Tisch – keine Würfelfunktion einbauen, außer der Nutzer wünscht es.
 - Rollen gelten **pro Runde**: `game_members.role` ist `'gm'` (Spielleiter, Ersteller) oder `'player'`.

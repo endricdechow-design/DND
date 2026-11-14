@@ -71,6 +71,7 @@ function Wizard({ gameId, characterId }) {
   const [original, setOriginal] = useState(null)
   const [step, setStep] = useState(0)
   const [ready, setReady] = useState(false)
+  const [isGM, setIsGM] = useState(false)
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -88,6 +89,7 @@ function Wizard({ gameId, characterId }) {
         .maybeSingle()
       if (cancelled) return
       if (!membership) return navigate('/', { replace: true })
+      setIsGM(membership.role === 'gm')
 
       if (isEdit) {
         const { data: character } = await supabase.from('characters').select('*').eq('id', characterId).maybeSingle()
@@ -164,6 +166,8 @@ function Wizard({ gameId, characterId }) {
       const data = {
         // Bestehende Angaben (z. B. Stufenaufstiege, private Notizen) behalten
         ...(original?.data ?? {}),
+        // Stufe gesenkt (nur Spielleiter)? Dann spätere Aufstiege verwerfen
+        levelUps: (original?.data?.levelUps ?? []).filter((lu) => lu.level <= draft.level),
         raceChoices: draft.raceChoices,
         classSkills: draft.classSkills,
         abilityMethod: draft.abilityMethod,
@@ -204,7 +208,7 @@ function Wizard({ gameId, characterId }) {
 
   const preview = deriveCharacter({
     name: draft.name, level: draft.level, race: draft.race, class: draft.class,
-    data: { ...draft, levelUps: original?.data?.levelUps ?? [] },
+    data: { ...draft, levelUps: (original?.data?.levelUps ?? []).filter((lu) => lu.level <= draft.level) },
   })
 
   return (
@@ -435,14 +439,24 @@ function Wizard({ gameId, characterId }) {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="label" htmlFor="level">Stufe</label>
-                    {isEdit ? (
+                    {isEdit && !isGM ? (
                       <>
                         <p id="level" className="input bg-stone-900/60 text-stone-400">Stufe {draft.level}</p>
-                        <p className="mt-1 text-xs text-stone-500">Aufsteigen über „⬆️ Stufe aufsteigen“ auf dem Bogen.</p>
+                        <p className="mt-1 text-xs text-stone-500">
+                          Aufsteigen über „⬆️ Stufe aufsteigen“ auf dem Bogen. Korrigieren kann die Stufe nur der Spielleiter.
+                        </p>
                       </>
                     ) : (
-                      <input id="level" type="number" min={1} max={20} className="input" value={draft.level}
-                        onChange={(e) => update({ level: Math.min(20, Math.max(1, Number(e.target.value) || 1)) })} />
+                      <>
+                        <input id="level" type="number" min={1} max={20} className="input" value={draft.level}
+                          onChange={(e) => update({ level: Math.min(20, Math.max(1, Number(e.target.value) || 1)) })} />
+                        {isEdit && isGM && (
+                          <p className="mt-1 text-xs text-amber-300/80">
+                            📜 Als Spielleiter kannst du die Stufe direkt setzen. Beim Senken werden spätere Aufstiege
+                            (gewürfelte TP, Attributserhöhungen) entfernt; neue Stufen zählen mit Durchschnitts-TP.
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
                   <div>
