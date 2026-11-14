@@ -36,6 +36,10 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - Tabellen `library_items` (type: item/map/handout/effect, `visibility` hidden/all, `folder`, `data`) und
   `library_assignments` (Eintrag ↔ Spieler). Nur der Spielleiter schreibt. Bilder im Bucket `library`, Ordner = game_id.
   Die Bibliotheksseite sendet nach Änderungen ein Broadcast `changed` auf Kanal `library-<gameId>`, damit Spieler neu laden.
+- Tabelle `game_log` (Protokoll, z. B. `item_used`), lesbar für Spielleiter + eigene Einträge, geschrieben nur per RPC.
+  RPC `use_library_item(item_id)`: Spieler verbraucht einen eigenen Gegenstand (Zuteilung weg + Protokolleintrag).
+  `GameLogNotifier.jsx` zeigt dem Spielleiter neue Einträge an.
+- Benachrichtigungen (Geschenk, Protokoll) nutzen Realtime **und** regelmäßiges Nachschauen als Absicherung.
 - `src/lib/images.js` – generisches Verkleinern/Hochladen/Löschen von Bildern (Avatare und Bibliothek nutzen es).
 - Würfeln passiert bewusst am echten Tisch – keine Würfelfunktion einbauen, außer der Nutzer wünscht es.
 - Rollen gelten **pro Runde**: `game_members.role` ist `'gm'` (Spielleiter, Ersteller) oder `'player'`.

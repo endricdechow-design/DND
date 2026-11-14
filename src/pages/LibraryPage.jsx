@@ -29,6 +29,7 @@ function Library({ gameId }) {
   const [editing, setEditing] = useState(null) // { item } oder { item: null } für neu
   const [viewing, setViewing] = useState(null)
   const [giving, setGiving] = useState(null) // Eintrag, der gerade verschenkt wird
+  const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const channelRef = useRef(null)
 
@@ -127,6 +128,7 @@ function Library({ gameId }) {
       )}
 
       {error && <p className="alert-error">{error}</p>}
+      {notice && <p className="alert-info">{notice}</p>}
 
       {isGM ? (
         <GameMasterView
@@ -178,7 +180,15 @@ function Library({ gameId }) {
 
       {viewing && (
         <Modal onClose={() => setViewing(null)}>
-          <LibraryViewer item={viewing} />
+          <LibraryViewer
+            item={viewing}
+            canUse={!isGM && assignments.some((a) => a.item_id === viewing.id)}
+            onUsed={async (used) => {
+              setViewing(null)
+              setNotice(`🧪 „${used.name}“ benutzt und aus deinem Inventar entfernt.`)
+              await load()
+            }}
+          />
         </Modal>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { useAuth } from '../lib/auth'
 import GiftNotifier from './GiftNotifier'
+import GameLogNotifier from './GameLogNotifier'
 
 export default function Layout({ children }) {
   const { profile, signOut } = useAuth()
@@ -20,6 +21,7 @@ export default function Layout({ children }) {
       </header>
       <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
       <GiftNotifier />
+      <GameLogNotifier />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../lib/auth'
 import { libraryType, rarity } from '../../data/library'
 import Modal from '../Modal'
 import GiveDialog from './GiveDialog'
@@ -14,6 +15,8 @@ export default function OwnedFromLibrary({ gameId, player, canGive }) {
   const [entries, setEntries] = useState([])
   const [giving, setGiving] = useState(false)
   const [viewing, setViewing] = useState(null)
+  const { profile } = useAuth()
+  const isMine = profile.id === player.user_id
 
   const load = useCallback(async () => {
     const { data } = await supabase
@@ -89,7 +92,14 @@ export default function OwnedFromLibrary({ gameId, player, canGive }) {
       )}
       {viewing && (
         <Modal onClose={() => setViewing(null)}>
-          <LibraryViewer item={viewing} />
+          <LibraryViewer
+            item={viewing}
+            canUse={isMine}
+            onUsed={() => {
+              setViewing(null)
+              load()
+            }}
+          />
         </Modal>
       )}
     </section>

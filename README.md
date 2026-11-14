@@ -25,6 +25,7 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
   - Spieler sehen nur, was für sie freigeschaltet ist – live, ohne Neuladen
   - „🎁 Geben“ direkt an der Kachel oder auf dem Charakterbogen – mit Sicherheitsfrage
   - Spieler bekommen eine animierte Einblendung, wenn sie etwas erhalten
+  - Spieler können Gegenstände **benutzen** (verbrauchen) – der Spielleiter bekommt eine Meldung
 - **Schnellnavigation** in jeder Runde: Lobby · Mein Charakter · Bibliothek
 
 ## Geplant (in dieser Reihenfolge)
