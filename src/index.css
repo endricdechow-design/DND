@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/* Schriften für das Fantasy-Design (geladen in index.html) */
+@theme {
+  --font-display: "Cinzel", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+body {
+  @apply min-h-screen bg-stone-950 font-body text-stone-200 antialiased;
+  background-image:
+    radial-gradient(ellipse at top, rgb(180 83 9 / 0.18), transparent 60%),
+    radial-gradient(ellipse at bottom, rgb(91 33 182 / 0.18), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Wiederverwendbare Bausteine – bitte für neue Seiten mitbenutzen */
+@layer components {
+  .card {
+    @apply rounded-2xl border border-amber-900/40 bg-stone-900/70 p-6 shadow-2xl shadow-black/50 backdrop-blur;
+  }
+  .title {
+    @apply font-display tracking-wide text-amber-200;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-stone-400;
+  }
+  .input {
+    @apply w-full rounded-lg border border-stone-700 bg-stone-950/60 px-4 py-2.5 text-stone-100 placeholder-stone-500 outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/30;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-b from-amber-500 to-amber-700 px-5 py-2.5 font-semibold text-stone-950 shadow-lg shadow-amber-900/40 transition hover:from-amber-400 hover:to-amber-600 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-violet-700 bg-violet-950/40 px-5 py-2.5 font-semibold text-violet-100 transition hover:border-violet-500 hover:bg-violet-900/50 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-stone-700 px-4 py-2 text-sm text-stone-300 transition hover:border-amber-600 hover:text-amber-200;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-red-900/60 px-4 py-2 text-sm text-red-300 transition hover:bg-red-950/60;
+  }
+  .badge-gm {
+    @apply rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-300;
+  }
+  .badge-player {
+    @apply rounded-full bg-violet-500/15 px-2.5 py-0.5 text-xs font-medium text-violet-300;
+  }
+  .alert-error {
+    @apply rounded-lg border border-red-800/60 bg-red-950/50 px-4 py-2.5 text-sm text-red-300;
+  }
+  .alert-info {
+    @apply rounded-lg border border-emerald-800/60 bg-emerald-950/50 px-4 py-2.5 text-sm text-emerald-300;
+  }
+}
