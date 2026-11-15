@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import Avatar from '../Avatar'
+import InfoTip from '../compendium/InfoTip'
 import { CLASSES, RACES, byKey } from '../../data/srd'
 import { hpStatus, shortRaceName } from '../../lib/party'
 import { ConditionList, ConditionPicker } from './Conditions'
@@ -38,7 +39,7 @@ export default function PartyCardDetails({ card, playerName, canEditConditions, 
       </div>
 
       <div>
-        <p className="mb-2 text-sm text-stone-400">Zustände</p>
+        <p className="mb-2 text-sm text-stone-400">Zustände<InfoTip id="zustaende:poisoned" /></p>
         {canEditConditions ? (
           <ConditionPicker conditions={card.conditions} onChange={onConditionsChange} />
         ) : (

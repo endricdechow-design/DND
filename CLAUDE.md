@@ -23,6 +23,10 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - `src/data/spells.js` – Zauber (Grad 0–3) + `spellRules(class, level, mods)` (Plätze, Zähler, Modus known/prepared/spellbook).
   Auswahl/Plätze gespeichert in `characters.data.spells` `{ cantrips, known, prepared, slotsUsed }`; Zähler sind nur Hinweise.
   Komponenten in `src/components/spells/`. Grade 4–9 fehlen noch.
+- `src/data/compendium/` – Kompendium: `rules.js` (Regeln/Glossar/SL-Tipps als kompakte Arrays), `monsters.js` (SRD-Werte),
+  `index.js` (führt alles zusammen: Regeln, Zustände, Fertigkeiten, Zauber, Katalog, Völker, Klassen, Monster + `searchCompendium`).
+  IDs `kategorie:schlüssel`; ⓘ-Symbole über `<InfoTip id="…" />`. `src/lib/compendium.jsx` = Provider (Pop-up + Hausregeln).
+  Tabelle `house_rules` (Migration 007): lesen alle Mitglieder, schreiben nur Spielleiter.
 - `src/data/levels.js` – Klassenfähigkeiten Stufe 2–20 und Stufen mit Attributserhöhung
 - `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
 - `wrangler.jsonc` – Veröffentlichung über **Cloudflare** (Workers Builds: `npm run build` → `npx wrangler deploy`, Ordner `dist`).

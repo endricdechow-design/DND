@@ -4,7 +4,7 @@ import { cantripDamage } from '../../data/spells'
 export function SpellTags({ spell }) {
   return (
     <>
-      {spell.concentration && <span className="rounded bg-sky-900/60 px-1.5 text-xs text-sky-200" title="Konzentration">K</span>}
+      {spell.concentration && <span className="rounded bg-sky-900/60 px-1.5 text-xs text-sky-200" title="Konzentration – siehe Kompendium">K</span>}
       {spell.ritual && <span className="rounded bg-emerald-900/60 px-1.5 text-xs text-emerald-200" title="Ritual">R</span>}
     </>
   )

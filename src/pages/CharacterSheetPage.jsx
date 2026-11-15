@@ -9,6 +9,7 @@ import { featuresUpTo } from '../data/levels'
 import { deriveCharacter, formatMeters, formatMod } from '../lib/character'
 import Avatar from '../components/Avatar'
 import GameNav from '../components/GameNav'
+import InfoTip from '../components/compendium/InfoTip'
 import GameMasterBanner from '../components/GameMasterBanner'
 import PartyCardDetails from '../components/party/PartyCardDetails'
 import { ConditionPicker } from '../components/party/Conditions'
@@ -174,17 +175,17 @@ function Sheet({ gameId, characterId }) {
 
       {/* Kampfwerte */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        <BigStat label="Rüstungsklasse" value={c.ac} hint={c.armor.key === 'none' ? 'ohne Rüstung' : c.armor.name.replace(/ \(.*\)/, '')} />
-        <BigStat label="Initiative" value={formatMod(c.initiative)} />
-        <BigStat label="Bewegung" value={formatMeters(c.speed)} />
-        <BigStat label="Übungsbonus" value={formatMod(c.prof)} />
-        <BigStat label="Passive Wahrnehmung" value={c.passivePerception} className="col-span-2 sm:col-span-1" />
+        <BigStat label="Rüstungsklasse" info="kampf:ruestungsklasse" value={c.ac} hint={c.armor.key === 'none' ? 'ohne Rüstung' : c.armor.name.replace(/ \(.*\)/, '')} />
+        <BigStat label="Initiative" info="kampf:initiative" value={formatMod(c.initiative)} />
+        <BigStat label="Bewegung" info="bewegung:bewegungsrate" value={formatMeters(c.speed)} />
+        <BigStat label="Übungsbonus" info="grundregeln:uebungsbonus" value={formatMod(c.prof)} />
+        <BigStat label="Passive Wahrnehmung" info="grundregeln:passiv" value={c.passivePerception} className="col-span-2 sm:col-span-1" />
       </section>
 
       <HitPoints character={character} hpMax={c.hpMax} canEdit={canEdit} onSave={saveFields} />
 
       <section className="card">
-        <h2 className="title mb-1 text-xl">Zustände</h2>
+        <h2 className="title mb-1 text-xl">Zustände<InfoTip id="zustaende:poisoned" /></h2>
         <p className="mb-3 text-xs text-stone-500">Tippe an, was gerade auf {character.name} wirkt – die Gruppe sieht es sofort.</p>
         <ConditionPicker conditions={character.conditions ?? []} onChange={(conditions) => saveFields({ conditions })} />
       </section>
@@ -206,13 +207,13 @@ function Sheet({ gameId, characterId }) {
         {/* Rettungswürfe & Fertigkeiten */}
         <section className="card space-y-5">
           <div>
-            <h2 className="title mb-3 text-xl">Rettungswürfe</h2>
+            <h2 className="title mb-3 text-xl">Rettungswürfe<InfoTip id="grundregeln:rettungswurf" /></h2>
             <ul className="grid grid-cols-2 gap-x-4 gap-y-1">
               {c.saves.map((s) => <BonusRow key={s.key} label={s.name} bonus={s.bonus} proficient={s.proficient} />)}
             </ul>
           </div>
           <div>
-            <h2 className="title mb-3 text-xl">Fertigkeiten</h2>
+            <h2 className="title mb-3 text-xl">Fertigkeiten<InfoTip id="fertigkeiten:uebersicht" /></h2>
             <ul className="space-y-1">
               {c.skills.map((s) => (
                 <BonusRow key={s.key} label={s.name} sub={abilityShort(s.ability)} bonus={s.bonus} proficient={s.proficient} />
@@ -315,7 +316,7 @@ function HitPoints({ character, hpMax, canEdit, onSave }) {
   return (
     <section className="card">
       <div className="flex flex-wrap items-end justify-between gap-2">
-        <h2 className="title text-xl">Trefferpunkte</h2>
+        <h2 className="title text-xl">Trefferpunkte<InfoTip id="grundregeln:trefferpunkte" /></h2>
         <p className="text-stone-300">
           <span className="text-3xl font-bold text-stone-100">{current}</span>
           <span className="text-stone-500"> / {hpMax}</span>
@@ -437,11 +438,13 @@ function LevelHistory({ character, derived, canEdit, onUndo }) {
 // ---------------------------------------------------------------------
 // Kleine Anzeige-Bausteine
 // ---------------------------------------------------------------------
-function BigStat({ label, value, hint, className = '' }) {
+function BigStat({ label, value, hint, info, className = '' }) {
   return (
     <div className={`card flex flex-col items-center p-4 text-center ${className}`}>
       <p className="text-3xl font-bold text-stone-100">{value}</p>
-      <p className="mt-1 text-xs uppercase tracking-wider text-stone-400">{label}</p>
+      <p className="mt-1 text-xs uppercase tracking-wider text-stone-400">{label}
+        {info && <InfoTip id={info} />}
+      </p>
       {hint && <p className="text-xs text-stone-500">{hint}</p>}
     </div>
   )

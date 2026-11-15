@@ -11,6 +11,7 @@ const CharacterWizardPage = lazy(() => import('./pages/CharacterWizardPage'))
 const CharacterSheetPage = lazy(() => import('./pages/CharacterSheetPage'))
 const LevelUpPage = lazy(() => import('./pages/LevelUpPage'))
 const LibraryPage = lazy(() => import('./pages/LibraryPage'))
+const CompendiumPage = lazy(() => import('./pages/CompendiumPage'))
 
 export default function App() {
   const { session, profile, loading, signOut } = useAuth()
@@ -36,6 +37,7 @@ export default function App() {
         <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/runde/:gameId" element={<LobbyPage />} />
+        <Route path="/kompendium" element={<CompendiumPage />} />
         <Route path="/runde/:gameId/bibliothek" element={<LibraryPage />} />
         <Route path="/runde/:gameId/charakter/neu" element={<CharacterWizardPage />} />
         <Route path="/runde/:gameId/charakter/:characterId" element={<CharacterSheetPage />} />

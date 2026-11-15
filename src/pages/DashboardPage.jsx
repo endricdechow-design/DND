@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
@@ -48,6 +48,14 @@ export default function DashboardPage() {
         <CreateGameCard onCreated={(game) => navigate(`/runde/${game.id}`)} />
         <JoinGameCard onJoined={(game) => navigate(`/runde/${game.id}`)} />
       </div>
+
+      <Link to="/kompendium" className="card flex items-center gap-4 transition hover:border-amber-600">
+        <span className="text-4xl" aria-hidden>📖</span>
+        <div className="min-w-0">
+          <p className="title text-xl">Kompendium</p>
+          <p className="text-sm text-stone-400">Regeln, Zauber, Gegenstände, Monster und Hausregeln nachschlagen</p>
+        </div>
+      </Link>
 
       <section className="card">
         <div className="mb-4 flex items-center justify-between">

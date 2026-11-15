@@ -19,6 +19,10 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 - **Zauber:** 164 SRD-Zauber (Zaubertricks bis Grad 3) mit deutscher Kurzbeschreibung
   - Zauberplätze zum Abhaken (Paktmagie beim Hexenmeister), „✨ Wirken“ mit Wahl des Platzes, Lange/Kurze Rast
   - Zaubertricks, bekannte bzw. vorbereitete Zauber, Zauberbuch für Magier – Zähler als Hinweis
+- **📖 Kompendium:** Suche über alles (auch englische Begriffe wie „AC“) – Regeln, Kampf, Aktionen, Zustände,
+  Fertigkeiten, Magie, Zauber, Gegenstände, Völker, Klassen, 37 Monster mit Werten, Glossar und Spielleiter-Tipps
+  - ⓘ-Symbole in der App öffnen direkt die passende Erklärung; Favoriten und „zuletzt angesehen“
+  - **Hausregeln:** Spielleiter schreiben eigene Regeln für ihre Runde, die Spieler finden sie im Kompendium
 - **Gruppenansicht:** Avatar-Leiste mit Lebensbalken und Zuständen; Klick öffnet die Charakterkarte
   - Mitspieler sehen nur Name, Bild, Volk, Klasse, Stufe, Gesundheit, Zustände und öffentliche Notizen
   - Den vollen Bogen und die privaten Notizen sehen nur der Spieler selbst und der Spielleiter
@@ -46,6 +50,11 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 6. ⬜ Extras: Nebel des Krieges, Abenteuer-Tagebuch, Regelhilfen für Anfänger
 
 *Gewürfelt wird bewusst weiter mit echten Würfeln am Tisch.*
+
+## Offene Punkte
+
+- ⬜ Zauber der Grade 4–9 ergänzen (sobald die Charaktere höhere Stufen erreichen)
+- ⬜ Kampffeld (Raster, Figuren, Initiative)
 
 ## Lizenz der Regelinhalte
 

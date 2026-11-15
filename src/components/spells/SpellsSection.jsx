@@ -3,6 +3,7 @@ import { GRADE_NAME, spellByKey, spellRules } from '../../data/spells'
 import { abilityShort } from '../../data/srd'
 import { formatMod } from '../../lib/character'
 import Modal from '../Modal'
+import InfoTip from '../compendium/InfoTip'
 import SpellDetails, { SpellTags } from './SpellDetails'
 import SpellManager from './SpellManager'
 import CastDialog from './CastDialog'
@@ -51,7 +52,7 @@ export default function SpellsSection({ character, derived, canEdit, onSave }) {
     <section className="card space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="title text-xl">🔮 Zauber</h2>
+          <h2 className="title text-xl">🔮 Zauber<InfoTip id="magie:zauberplaetze" /></h2>
           <p className="text-sm text-stone-400">
             {abilityShort(derived.spellcasting.ability)} · Rettungswurf-SG <b className="text-stone-200">{derived.spellcasting.dc}</b> · Zauberangriff{' '}
             <b className="text-stone-200">{formatMod(derived.spellcasting.attack)}</b>

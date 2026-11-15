@@ -5,6 +5,7 @@ import { useAuth } from '../../lib/auth'
 import { libraryType, rarity } from '../../data/library'
 import { formatKg, itemWeight, totalWeight } from '../../lib/inventory'
 import Modal from '../Modal'
+import InfoTip from '../compendium/InfoTip'
 import GiveDialog from './GiveDialog'
 import LibraryViewer from './LibraryViewer'
 import FoundItemDialog from './FoundItemDialog'
@@ -86,7 +87,7 @@ export default function OwnedFromLibrary({ gameId, player, canGive, capacity, ga
       {capacity != null && (
         <div>
           <div className="mb-1 flex items-baseline justify-between text-sm">
-            <span className="text-stone-400">⚖️ Traglast</span>
+            <span className="text-stone-400">⚖️ Traglast<InfoTip id="grundregeln:traglast" /></span>
             <span className={overloaded ? 'font-semibold text-red-300' : 'text-stone-300'}>
               {formatKg(loadWithPending)} / {formatKg(capacity)}
               {pendingWeight > 0 && <span className="text-stone-500"> (inkl. {formatKg(pendingWeight)} wartend)</span>}
