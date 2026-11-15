@@ -6,6 +6,8 @@ import GameLogNotifier from './GameLogNotifier'
 import FeedbackButton from './feedback/FeedbackButton'
 import InstallAppButton from './InstallApp'
 import Modal from './Modal'
+import NameDialog from './NameDialog'
+import { translateError } from '../lib/errors'
 import CompendiumBrowser from './compendium/CompendiumBrowser'
 import { CompendiumProvider, useCompendium } from '../lib/compendium'
 
@@ -80,8 +82,10 @@ function SearchBar() {
 
 // Rundes Profil-Symbol mit Menü (Name, Meine Runden, Kompendium, Abmelden)
 function UserMenu() {
-  const { profile, signOut } = useAuth()
+  const { profile, signOut, updateUsername } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
+  const [renaming, setRenaming] = useState(false)
+  const [renameError, setRenameError] = useState('')
   const ref = useRef(null)
 
   // Schließen bei Klick daneben oder mit Esc
@@ -117,6 +121,14 @@ function UserMenu() {
           <div className="border-b border-stone-800 px-4 py-3">
             <p className="text-xs text-stone-500">Angemeldet als</p>
             <p className="truncate font-semibold text-stone-100">{profile.username}</p>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => { setIsOpen(false); setRenameError(''); setRenaming(true) }}
+              className="mt-1 text-xs text-amber-400 hover:text-amber-200"
+            >
+              ✏️ Namen ändern
+            </button>
           </div>
           <Link to="/" role="menuitem" onClick={() => setIsOpen(false)} className="block px-4 py-2.5 text-sm text-stone-300 hover:bg-stone-800 hover:text-amber-200">
             🏰 Meine Runden
@@ -138,6 +150,25 @@ function UserMenu() {
             🚪 Abmelden
           </button>
         </div>
+      )}
+      {renaming && (
+        <NameDialog
+          title="Namen ändern"
+          hint="So sehen dich die anderen in den Runden. Dein Charaktername bleibt gleich."
+          initial={profile.username}
+          maxLength={40}
+          requireChange
+          error={renameError}
+          onClose={() => setRenaming(false)}
+          onSave={async (name) => {
+            try {
+              await updateUsername(name)
+              setRenaming(false)
+            } catch (err) {
+              setRenameError(translateError(err.message))
+            }
+          }}
+        />
       )}
     </div>
   )

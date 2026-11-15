@@ -4,7 +4,7 @@ import MapCanvas from './MapCanvas'
 import MapToolbar from './MapToolbar'
 import RoomList from './RoomList'
 import RoomsEditor from './RoomsEditor'
-import NameDialog from './NameDialog'
+import NameDialog from '../NameDialog'
 
 /**
  * Spielleiter: Nebel aufdecken/verdecken, Räume vorbereiten, Tisch-Bildschirm lenken.

@@ -8,6 +8,7 @@ const AuthContext = createContext(null)
  *  - session: Login-Sitzung (null = nicht eingeloggt)
  *  - profile: { id, username } des eingeloggten Benutzers
  *  - loading: true, solange noch geladen wird
+ *  - updateUsername(name): eigenen Anzeigenamen ändern
  */
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined) // undefined = noch unbekannt
@@ -46,6 +47,11 @@ export function AuthProvider({ children }) {
     profile: userId && profileReady ? loadedProfile.data : null,
     loading: session === undefined || !profileReady,
     signOut: () => supabase.auth.signOut(),
+    updateUsername: async (username) => {
+      const { data, error } = await supabase.from('profiles').update({ username }).eq('id', userId).select('id, username').single()
+      if (error) throw error
+      setLoadedProfile({ userId, data })
+    },
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

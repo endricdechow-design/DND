@@ -3,7 +3,7 @@ import MapCanvas from './MapCanvas'
 import MapToolbar from './MapToolbar'
 import { TOOLS } from '../../lib/fog'
 import RoomList from './RoomList'
-import NameDialog from './NameDialog'
+import NameDialog from '../NameDialog'
 
 const ROOM_TOOLS = TOOLS.filter((t) => t.key !== 'brush')
 
