@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
@@ -12,7 +12,10 @@ import GameNav from '../components/GameNav'
 import InfoTip from '../components/compendium/InfoTip'
 import GameMasterBanner from '../components/GameMasterBanner'
 import PartyCardDetails from '../components/party/PartyCardDetails'
-import { ConditionPicker } from '../components/party/Conditions'
+import { ConditionIcons, ConditionPicker } from '../components/party/Conditions'
+import { conditionByKey } from '../data/conditions'
+import { spellRules } from '../data/spells'
+import { hpStatus } from '../lib/party'
 import OwnedFromLibrary from '../components/library/OwnedFromLibrary'
 import SpellsSection from '../components/spells/SpellsSection'
 
@@ -26,6 +29,8 @@ function Sheet({ gameId, characterId }) {
   const navigate = useNavigate()
   const location = useLocation()
   const notice = location.state?.notice
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
   const [character, setCharacter] = useState(null)
   const [partyCard, setPartyCard] = useState(null) // eingeschränkte Ansicht für Mitspieler
   const [isGM, setIsGM] = useState(false)
@@ -136,12 +141,17 @@ function Sheet({ gameId, characterId }) {
     navigate(`/runde/${gameId}`, { replace: true })
   }
 
+  const isCaster = Boolean(spellRules(character.class, c.level, c.mods) && c.spellcasting)
+  const tabs = TABS.filter((t) => t.key !== 'zauber' || isCaster)
+  const tab = tabs.some((t) => t.key === tabParam) ? tabParam : 'kampf'
+  const setTab = (key) => setSearchParams(key === 'kampf' ? {} : { tab: key }, { replace: true })
+  const hpCurrent = Math.min(character.hp_current, c.hpMax)
+  const hpPercent = c.hpMax > 0 ? Math.round((hpCurrent / c.hpMax) * 100) : 0
+  const hp = hpStatus(hpPercent)
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <GameNav gameId={gameId} />
-        {canEdit && <Link to={`/runde/${gameId}/charakter/${characterId}/bearbeiten`} className="btn-ghost">✏️ Bearbeiten</Link>}
-      </div>
+      <GameNav gameId={gameId} />
 
       {isGM && character.user_id !== profile.id && (
         <GameMasterBanner>
@@ -150,140 +160,248 @@ function Sheet({ gameId, characterId }) {
         </GameMasterBanner>
       )}
 
-      {/* Kopf */}
-      <section className="card flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
-        <Avatar name={character.name} src={character.avatar_url} size="xl" />
-        <div className="min-w-0 flex-1">
-          <h1 className="title break-words text-3xl sm:text-4xl">{character.name}</h1>
-          <p className="mt-1 text-lg text-stone-200">
-            Stufe {c.level} · {c.race?.name} · {c.cls?.name}
-          </p>
-          <p className="mt-1 text-sm text-stone-400">
-            {[backgroundName, data.alignment, `gespielt von ${character.profiles?.username ?? '?'}`].filter(Boolean).join(' · ')}
-          </p>
+      {/* ---------- Kopf: der Held ---------- */}
+      <section className="relative overflow-hidden rounded-2xl border-2 border-violet-700/50 bg-gradient-to-br from-violet-950/60 via-stone-900/80 to-stone-950 p-5 shadow-2xl shadow-violet-950/40 sm:p-6">
+        <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_30%,rgb(139_92_246/0.25),transparent_55%)]" aria-hidden />
+        <div className="relative flex flex-col items-center gap-5 text-center sm:flex-row sm:items-center sm:text-left">
+          <div className="relative shrink-0">
+            <Avatar name={character.name} src={character.avatar_url} size="xl" />
+            <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-amber-600 bg-stone-950 px-3 py-0.5 font-display text-xs font-bold text-amber-300 shadow-lg">
+              Stufe {c.level}
+            </span>
+          </div>
+          <div className="w-full min-w-0 flex-1 space-y-3">
+            <div>
+              <h1 className="title break-words text-3xl sm:text-4xl">{character.name}</h1>
+              <p className="text-stone-200">{[c.race?.name, c.cls?.name].filter(Boolean).join(' · ')}</p>
+              <p className="text-sm text-stone-400">
+                {[backgroundName, data.alignment, `gespielt von ${character.profiles?.username ?? '?'}`].filter(Boolean).join(' · ')}
+              </p>
+            </div>
+            <div className="mx-auto max-w-md sm:mx-0">
+              <div className="mb-1 flex items-center justify-between gap-2 text-sm">
+                <span className={hp.text}>❤️ {hpCurrent} / {c.hpMax} TP{character.hp_temp > 0 && <span className="text-sky-300"> (+{character.hp_temp})</span>}</span>
+                <ConditionIcons conditions={character.conditions ?? []} max={5} />
+              </div>
+              <div className="h-2.5 overflow-hidden rounded-full bg-stone-800">
+                <div className={`h-full ${hp.bar} transition-all`} style={{ width: `${hpPercent}%` }} />
+              </div>
+            </div>
+            {canEdit && (
+              <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+                {c.level < 20 && (
+                  <Link to={`/runde/${gameId}/charakter/${characterId}/aufstieg`} className="btn-primary px-4 py-2 text-sm">⬆️ Stufe aufsteigen</Link>
+                )}
+                <Link to={`/runde/${gameId}/charakter/${characterId}/bearbeiten`} className="btn-ghost">✏️ Bearbeiten</Link>
+              </div>
+            )}
+          </div>
         </div>
-        {canEdit && c.level < 20 && (
-          <Link to={`/runde/${gameId}/charakter/${characterId}/aufstieg`} className="btn-primary shrink-0">
-            ⬆️ Stufe aufsteigen
-          </Link>
-        )}
       </section>
 
       {notice && <p className="alert-info">{notice}</p>}
-
       {error && <p className="alert-error">{error}</p>}
 
-      {/* Kampfwerte */}
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        <BigStat label="Rüstungsklasse" info="kampf:ruestungsklasse" value={c.ac} hint={c.armor.key === 'none' ? 'ohne Rüstung' : c.armor.name.replace(/ \(.*\)/, '')} />
-        <BigStat label="Initiative" info="kampf:initiative" value={formatMod(c.initiative)} />
-        <BigStat label="Bewegung" info="bewegung:bewegungsrate" value={formatMeters(c.speed)} />
-        <BigStat label="Übungsbonus" info="grundregeln:uebungsbonus" value={formatMod(c.prof)} />
-        <BigStat label="Passive Wahrnehmung" info="grundregeln:passiv" value={c.passivePerception} className="col-span-2 sm:col-span-1" />
-      </section>
+      {/* ---------- Reiter (bleiben beim Scrollen oben) ---------- */}
+      <nav className="sticky top-0 z-20 -mx-4 border-b border-stone-800 bg-stone-950/90 px-4 backdrop-blur sm:mx-0 sm:rounded-xl sm:border" aria-label="Bereiche des Charakterbogens">
+        <div className="grid grid-cols-3 gap-1 py-2 sm:flex">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setTab(t.key)}
+              className={`shrink-0 truncate rounded-lg px-2 py-2 text-sm font-medium transition sm:px-3 ${
+                tab === t.key ? 'bg-amber-500/20 text-amber-200' : 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
+              }`}
+              aria-current={tab === t.key ? 'page' : undefined}
+            >
+              <span aria-hidden>{t.icon}</span> {t.label}
+            </button>
+          ))}
+        </div>
+      </nav>
 
-      <HitPoints character={character} hpMax={c.hpMax} canEdit={canEdit} onSave={saveFields} />
-
-      <section className="card">
-        <h2 className="title mb-1 text-xl">Zustände<InfoTip id="zustaende:poisoned" /></h2>
-        <p className="mb-3 text-xs text-stone-500">Tippe an, was gerade auf {character.name} wirkt – die Gruppe sieht es sofort.</p>
-        <ConditionPicker conditions={character.conditions ?? []} onChange={(conditions) => saveFields({ conditions })} />
-      </section>
-
-      <SpellsSection character={character} derived={c} canEdit={canEdit} onSave={saveFields} />
-
-      {/* Attribute */}
-      <section className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-        {Object.entries(c.abilities).map(([key, score]) => (
-          <div key={key} className="card flex flex-col items-center p-3 text-center">
-            <p className="text-xs font-semibold tracking-widest text-stone-400">{abilityShort(key)}</p>
-            <p className="mt-1 text-3xl font-bold text-amber-200">{formatMod(c.mods[key])}</p>
-            <p className="mt-1 rounded-full bg-stone-800 px-3 text-sm text-stone-300">{score}</p>
-          </div>
-        ))}
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Rettungswürfe & Fertigkeiten */}
-        <section className="card space-y-5">
-          <div>
-            <h2 className="title mb-3 text-xl">Rettungswürfe<InfoTip id="grundregeln:rettungswurf" /></h2>
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-1">
-              {c.saves.map((s) => <BonusRow key={s.key} label={s.name} bonus={s.bonus} proficient={s.proficient} />)}
-            </ul>
-          </div>
-          <div>
-            <h2 className="title mb-3 text-xl">Fertigkeiten<InfoTip id="fertigkeiten:uebersicht" /></h2>
-            <ul className="space-y-1">
-              {c.skills.map((s) => (
-                <BonusRow key={s.key} label={s.name} sub={abilityShort(s.ability)} bonus={s.bonus} proficient={s.proficient} />
-              ))}
-            </ul>
-            <p className="mt-3 text-xs text-stone-500">● = geübt (Übungsbonus {formatMod(c.prof)} ist eingerechnet)</p>
-          </div>
-        </section>
-
-        {/* Eigenschaften */}
-        <section className="card space-y-5">
-          {c.breathWeapon && (
-            <InfoBlock title={`Odemwaffe (${c.breathWeapon.name})`}>
-              <p className="text-sm text-stone-300">
-                {c.breathWeapon.dice} {c.breathWeapon.damage}schaden · {c.breathWeapon.area} · {abilityShort(c.breathWeapon.save)}-Rettungswurf SG{' '}
-                {c.breathWeapon.dc} (halber Schaden bei Erfolg)
-              </p>
-            </InfoBlock>
+      {/* ---------- Kampf ---------- */}
+      {tab === 'kampf' && (
+        <>
+          <HitPoints character={character} hpMax={c.hpMax} canEdit={canEdit} onSave={saveFields} />
+          <section className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+            <BigStat icon="🛡️" label="Rüstungsklasse" info="kampf:ruestungsklasse" value={c.ac} hint={c.armor.key === 'none' ? 'ohne Rüstung' : c.armor.name.replace(/ \(.*\)/, '')} highlight />
+            <BigStat icon="⚡" label="Initiative" info="kampf:initiative" value={formatMod(c.initiative)} />
+            <BigStat icon="👣" label="Bewegung" info="bewegung:bewegungsrate" value={formatMeters(c.speed)} />
+            <BigStat icon="🎓" label="Übungsbonus" info="grundregeln:uebungsbonus" value={formatMod(c.prof)} />
+            <BigStat icon="👁️" label="Passive Wahrnehmung" info="grundregeln:passiv" value={c.passivePerception} className="col-span-2 sm:col-span-1" />
+          </section>
+          <ConditionsCard name={character.name} conditions={character.conditions ?? []} onChange={(conditions) => saveFields({ conditions })} />
+          {(c.breathWeapon || c.sneakAttack) && (
+            <section className="card space-y-4">
+              {c.breathWeapon && (
+                <InfoBlock title={`🐲 Odemwaffe (${c.breathWeapon.name})`}>
+                  <p className="text-sm text-stone-300">
+                    {c.breathWeapon.dice} {c.breathWeapon.damage}schaden · {c.breathWeapon.area} · {abilityShort(c.breathWeapon.save)}-Rettungswurf SG{' '}
+                    {c.breathWeapon.dc} (halber Schaden bei Erfolg)
+                  </p>
+                </InfoBlock>
+              )}
+              {c.sneakAttack && (
+                <InfoBlock title="🗡️ Hinterhältiger Angriff">
+                  <p className="text-sm text-stone-300">Aktuell <b>{c.sneakAttack}</b> zusätzlicher Schaden (1× pro Zug).</p>
+                </InfoBlock>
+              )}
+            </section>
           )}
-          {c.sneakAttack && (
-            <InfoBlock title="Hinterhältiger Angriff">
-              <p className="text-sm text-stone-300">Aktuell <b>{c.sneakAttack}</b> zusätzlicher Schaden (1× pro Zug).</p>
-            </InfoBlock>
-          )}
-          <TraitBlock title={`Klasse: ${c.cls?.name}`} items={[...(c.cls?.features ?? []), ...featuresUpTo(character.class, c.level)]} />
-          <TraitBlock title={`Volk: ${c.race?.name}`} items={c.race?.traits ?? []} />
-          {c.background?.feature && <TraitBlock title={`Hintergrund: ${c.background.name}`} items={[c.background.feature]} />}
-        </section>
-      </div>
-
-      <OwnedFromLibrary
-        gameId={gameId}
-        player={{
-          user_id: character.user_id,
-          short: character.name,
-          label: `${character.name} (${character.profiles?.username ?? '?'})`,
-        }}
-        canGive={isGM}
-        capacity={c.carryCapacity}
-        gameIdForFound={character.user_id === profile.id ? gameId : null}
-      />
-
-      {c.level > 1 && (
-        <LevelHistory character={character} derived={c} canEdit={canEdit} onUndo={undoLastLevel} />
+        </>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Notes
-          character={character}
-          field="notes"
-          title="Öffentliche Notizen"
-          hint="👥 Für alle in der Runde sichtbar – Aussehen, Vorgeschichte, was die Gruppe wissen darf."
-          placeholder="z. B. Aussehen, Herkunft, Ziele …"
-          onSave={saveFields}
-        />
-        <Notes
-          character={character}
-          field="privateNotes"
-          title="Private Notizen"
-          hint="🔒 Nur für dich und den Spielleiter – Ausrüstung, Gold, Geheimnisse."
-          placeholder="z. B. Ausrüstung, Gold, Geheimnisse, Pläne …"
-          onSave={saveFields}
-        />
-      </div>
+      {/* ---------- Werte ---------- */}
+      {tab === 'werte' && (
+        <>
+          <section className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-6">
+            {Object.entries(c.abilities).map(([key, score]) => (
+              <AbilityShield key={key} label={abilityShort(key)} mod={formatMod(c.mods[key])} score={score} />
+            ))}
+          </section>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <section className="card">
+              <h2 className="title mb-3 text-xl">Rettungswürfe<InfoTip id="grundregeln:rettungswurf" /></h2>
+              <ul className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
+                {c.saves.map((sv) => <BonusRow key={sv.key} label={sv.name} bonus={sv.bonus} proficient={sv.proficient} />)}
+              </ul>
+            </section>
+            <section className="card lg:row-span-2">
+              <h2 className="title mb-3 text-xl">Fertigkeiten<InfoTip id="fertigkeiten:uebersicht" /></h2>
+              <ul className="space-y-1">
+                {c.skills.map((sk) => (
+                  <BonusRow key={sk.key} label={sk.name} sub={abilityShort(sk.ability)} bonus={sk.bonus} proficient={sk.proficient} />
+                ))}
+              </ul>
+              <p className="mt-3 text-xs text-stone-500">● = geübt (Übungsbonus {formatMod(c.prof)} ist eingerechnet)</p>
+            </section>
+          </div>
+        </>
+      )}
 
-      {canEdit && (
-        <div className="flex justify-end">
-          <button onClick={deleteCharacter} className="btn-danger">Charakter löschen</button>
+      {/* ---------- Zauber ---------- */}
+      {tab === 'zauber' && <SpellsSection character={character} derived={c} canEdit={canEdit} onSave={saveFields} />}
+
+      {/* ---------- Inventar ---------- */}
+      {tab === 'inventar' && (
+        <OwnedFromLibrary
+          gameId={gameId}
+          player={{
+            user_id: character.user_id,
+            short: character.name,
+            label: `${character.name} (${character.profiles?.username ?? '?'})`,
+          }}
+          canGive={isGM}
+          capacity={c.carryCapacity}
+          gameIdForFound={character.user_id === profile.id ? gameId : null}
+        />
+      )}
+
+      {/* ---------- Merkmale ---------- */}
+      {tab === 'merkmale' && (
+        <>
+          <section className="card space-y-5">
+            <TraitBlock title={`⚔️ Klasse: ${c.cls?.name}`} items={[...(c.cls?.features ?? []), ...featuresUpTo(character.class, c.level)]} />
+            <TraitBlock title={`🧬 Volk: ${c.race?.name}`} items={c.race?.traits ?? []} />
+            {c.background?.feature && <TraitBlock title={`📖 Hintergrund: ${c.background.name}`} items={[c.background.feature]} />}
+          </section>
+          {c.level > 1 && <LevelHistory character={character} derived={c} canEdit={canEdit} onUndo={undoLastLevel} />}
+        </>
+      )}
+
+      {/* ---------- Notizen ---------- */}
+      {tab === 'notizen' && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Notes
+            character={character}
+            field="notes"
+            title="Öffentliche Notizen"
+            hint="👥 Für alle in der Runde sichtbar – Aussehen, Vorgeschichte, was die Gruppe wissen darf."
+            placeholder="z. B. Aussehen, Herkunft, Ziele …"
+            onSave={saveFields}
+          />
+          <Notes
+            character={character}
+            field="privateNotes"
+            title="Private Notizen"
+            hint="🔒 Nur für dich und den Spielleiter – Ausrüstung, Gold, Geheimnisse."
+            placeholder="z. B. Ausrüstung, Gold, Geheimnisse, Pläne …"
+            onSave={saveFields}
+          />
         </div>
       )}
+
+      {canEdit && (
+        <div className="flex justify-end pt-4">
+          <button onClick={deleteCharacter} className="text-sm text-stone-600 hover:text-red-300">🗑️ Charakter löschen</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const TABS = [
+  { key: 'kampf', icon: '⚔️', label: 'Kampf' },
+  { key: 'werte', icon: '🎲', label: 'Werte' },
+  { key: 'zauber', icon: '✨', label: 'Zauber' },
+  { key: 'inventar', icon: '🎒', label: 'Inventar' },
+  { key: 'merkmale', icon: '📜', label: 'Merkmale' },
+  { key: 'notizen', icon: '📝', label: 'Notizen' },
+]
+
+// Zustände: nur die aktiven zeigen, Auswahl auf Knopfdruck
+function ConditionsCard({ name, conditions, onChange }) {
+  const [picking, setPicking] = useState(false)
+  return (
+    <section className="card">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="title text-xl">Zustände<InfoTip id="zustaende:poisoned" /></h2>
+        <button type="button" className="btn-ghost px-3 py-1.5" onClick={() => setPicking(!picking)}>
+          {picking ? '✓ Fertig' : '＋ Zustand'}
+        </button>
+      </div>
+      {picking ? (
+        <div className="mt-3 space-y-2">
+          <p className="text-xs text-stone-500">Tippe an, was gerade auf {name} wirkt – die Gruppe sieht es sofort.</p>
+          <ConditionPicker conditions={conditions} onChange={onChange} />
+        </div>
+      ) : conditions.length ? (
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {conditions.map((key) => {
+            const cond = conditionByKey(key)
+            if (!cond) return null
+            return (
+              <li key={key} className="flex items-center gap-1 rounded-full border border-red-500/60 bg-red-500/10 py-1 pl-3 pr-1 text-sm text-red-200" title={cond.text}>
+                {cond.icon} {cond.name}
+                <InfoTip id={`zustaende:${key}`} />
+                <button type="button" className="ml-1 rounded-full px-1.5 text-red-300 hover:bg-red-500/20" aria-label={`${cond.name} entfernen`} onClick={() => onChange(conditions.filter((k) => k !== key))}>
+                  ✕
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      ) : (
+        <p className="mt-2 text-sm text-stone-500">✨ Keine besonderen Zustände.</p>
+      )}
+    </section>
+  )
+}
+
+// Attribut im Wappen-Look
+function AbilityShield({ label, mod, score }) {
+  const shield = 'polygon(50% 0, 100% 10%, 100% 62%, 50% 100%, 0 62%, 0 10%)'
+  return (
+    <div className="flex flex-col items-center">
+      <div className="relative h-28 w-24 bg-gradient-to-b from-amber-500/80 to-amber-900/80" style={{ clipPath: shield }}>
+        <div className="absolute inset-[2px] flex flex-col items-center bg-gradient-to-b from-stone-900 to-stone-950 pt-3" style={{ clipPath: shield }}>
+          <p className="text-xs font-bold tracking-[0.2em] text-amber-400/90">{label}</p>
+          <p className="mt-1 font-display text-3xl font-bold text-stone-100">{mod}</p>
+        </div>
+      </div>
+      <p className="relative -mt-3 rounded-full border border-amber-700/70 bg-stone-950 px-3 text-sm font-semibold text-amber-200">{score}</p>
     </div>
   )
 }
@@ -296,7 +414,7 @@ function HitPoints({ character, hpMax, canEdit, onSave }) {
   const current = Math.min(character.hp_current, hpMax)
   const temp = character.hp_temp
   const percent = hpMax > 0 ? Math.round((current / hpMax) * 100) : 0
-  const barColor = percent > 50 ? 'bg-emerald-500' : percent > 25 ? 'bg-amber-500' : 'bg-red-600'
+  const barColor = hpStatus(percent).bar
   const value = Math.max(0, Math.floor(Number(amount) || 0))
 
   function damage() {
@@ -438,10 +556,11 @@ function LevelHistory({ character, derived, canEdit, onUndo }) {
 // ---------------------------------------------------------------------
 // Kleine Anzeige-Bausteine
 // ---------------------------------------------------------------------
-function BigStat({ label, value, hint, info, className = '' }) {
+function BigStat({ icon, label, value, hint, info, highlight = false, className = '' }) {
   return (
-    <div className={`card flex flex-col items-center p-4 text-center ${className}`}>
-      <p className="text-3xl font-bold text-stone-100">{value}</p>
+    <div className={`flex flex-col items-center rounded-2xl border p-4 text-center shadow-lg shadow-black/40 ${highlight ? 'border-amber-700/60 bg-gradient-to-b from-amber-950/40 to-stone-900/80' : 'border-stone-800 bg-stone-900/70'} ${className}`}>
+      {icon && <span className="text-lg leading-none opacity-80" aria-hidden>{icon}</span>}
+      <p className="mt-1 font-display text-3xl font-bold text-stone-100">{value}</p>
       <p className="mt-1 text-xs uppercase tracking-wider text-stone-400">{label}
         {info && <InfoTip id={info} />}
       </p>

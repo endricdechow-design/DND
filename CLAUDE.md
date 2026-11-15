@@ -46,6 +46,7 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - App/PWA: `public/manifest.webmanifest`, Symbole in `public/icons/`, `public/sw.js` (Service Worker cacht bewusst **nur** die
   Offline-Seite `public/offline.html` – keine alten Versionen), Registrierung in `src/main.jsx` (nur im Build).
   `src/lib/install.js` + `src/components/InstallApp.jsx` = „📱 Als App installieren“ im Profil-Menü (iPhone: Anleitung).
+- Charakterbogen (`CharacterSheetPage.jsx`): Kopf + Reiter Kampf/Werte/Zauber/Inventar/Merkmale/Notizen (`?tab=…` in der Adresse).
 - `src/data/levels.js` – Klassenfähigkeiten Stufe 2–20 und Stufen mit Attributserhöhung
 - `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
 - `wrangler.jsonc` – Veröffentlichung über **Cloudflare** (Workers Builds: `npm run build` → `npx wrangler deploy`, Ordner `dist`).
