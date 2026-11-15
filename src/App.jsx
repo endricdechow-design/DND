@@ -13,6 +13,7 @@ const LevelUpPage = lazy(() => import('./pages/LevelUpPage'))
 const LibraryPage = lazy(() => import('./pages/LibraryPage'))
 const CompendiumPage = lazy(() => import('./pages/CompendiumPage'))
 const WorkshopPage = lazy(() => import('./pages/WorkshopPage'))
+const FeedbackPage = lazy(() => import('./pages/FeedbackPage'))
 const AdventurePage = lazy(() => import('./pages/AdventurePage'))
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/runde/:gameId" element={<LobbyPage />} />
         <Route path="/kompendium" element={<CompendiumPage />} />
         <Route path="/werkstatt" element={<WorkshopPage />} />
+        <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/werkstatt/:adventureId" element={<AdventurePage />} />
         <Route path="/runde/:gameId/bibliothek" element={<LibraryPage />} />
         <Route path="/runde/:gameId/charakter/neu" element={<CharacterWizardPage />} />

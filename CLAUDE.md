@@ -32,6 +32,9 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   `data.source.item_id` verhindert Doppelte, NSC → handout mit `data.npc`) und `import_shared_adventure(code)`.
   Bilder im Bucket `workshop` (Ordner = User-ID; werden beim Löschen bewusst nicht entfernt, da Runden sie nutzen).
   Seiten `WorkshopPage.jsx`, `AdventurePage.jsx`, Editor in `src/components/workshop/`.
+- Feedback (Migration 009): Tabellen `feedback`, `app_admins` (Betreiber; erster `claim_app_admin()` gewinnt), `app_settings`
+  (`ntfy_topic`, nur Betreiber). Trigger `notify_new_feedback` → `send_push` → `pg_net` POST an ntfy.sh (Fehler werden geschluckt).
+  Bilder im Bucket `feedback`. Komponenten `src/components/feedback/`, Seite `FeedbackPage.jsx`.
 - `src/data/levels.js` – Klassenfähigkeiten Stufe 2–20 und Stufen mit Attributserhöhung
 - `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
 - `wrangler.jsonc` – Veröffentlichung über **Cloudflare** (Workers Builds: `npm run build` → `npx wrangler deploy`, Ordner `dist`).

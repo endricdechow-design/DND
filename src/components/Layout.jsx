@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { useAuth } from '../lib/auth'
 import GiftNotifier from './GiftNotifier'
 import GameLogNotifier from './GameLogNotifier'
+import FeedbackButton from './feedback/FeedbackButton'
 import Modal from './Modal'
 import CompendiumBrowser from './compendium/CompendiumBrowser'
 import { CompendiumProvider, useCompendium } from '../lib/compendium'
@@ -27,9 +28,10 @@ export default function Layout({ children }) {
           </div>
         </header>
         <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
-        <footer className="pb-6 text-center text-xs text-stone-600">Version {__APP_VERSION__}</footer>
+        <footer className="pb-20 text-center text-xs text-stone-600">Version {__APP_VERSION__}</footer>
         <GiftNotifier />
         <GameLogNotifier />
+        <FeedbackButton />
       </div>
     </CompendiumProvider>
   )
@@ -123,6 +125,9 @@ function UserMenu() {
           </Link>
           <Link to="/werkstatt" role="menuitem" onClick={() => setIsOpen(false)} className="block px-4 py-2.5 text-sm text-stone-300 hover:bg-stone-800 hover:text-amber-200">
             🛠️ Spielleiter-Werkstatt
+          </Link>
+          <Link to="/feedback" role="menuitem" onClick={() => setIsOpen(false)} className="block px-4 py-2.5 text-sm text-stone-300 hover:bg-stone-800 hover:text-amber-200">
+            💬 Feedback
           </Link>
           <button type="button" role="menuitem" onClick={signOut} className="block w-full border-t border-stone-800 px-4 py-2.5 text-left text-sm text-red-300 hover:bg-red-950/40">
             🚪 Abmelden

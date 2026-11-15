@@ -25,6 +25,8 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
   - **Hausregeln:** Spielleiter schreiben eigene Regeln für ihre Runde, die Spieler finden sie im Kompendium
 - **🛠️ Spielleiter-Werkstatt:** Abenteuer unabhängig von einer Runde vorbereiten (Gegenstände, Karten, Handouts,
   Effekte, NSCs), mit einem Klick versteckt in eine Runde laden („erneut laden“ bringt nur Neues), per Teilen-Code kopieren
+- **💬 Feedback:** Knopf unten rechts auf jeder Seite (Kategorie, Text, Screenshot, Seite wird mitgeschickt).
+  Der Betreiber sieht alles unter /feedback und bekommt Push-Nachrichten über die App ntfy
 - **Gruppenansicht:** Avatar-Leiste mit Lebensbalken und Zuständen; Klick öffnet die Charakterkarte
   - Mitspieler sehen nur Name, Bild, Volk, Klasse, Stufe, Gesundheit, Zustände und öffentliche Notizen
   - Den vollen Bogen und die privaten Notizen sehen nur der Spieler selbst und der Spielleiter
