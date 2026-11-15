@@ -94,3 +94,17 @@ body {
   to { transform: scaleX(0); }
 }
 .toast-countdown { transform-origin: left; animation: toast-countdown linear forwards; }
+
+/* ---------- Nebelkarte: langsam ziehende Schwaden ---------- */
+@keyframes fog-drift {
+  from { background-position: 0 0; }
+  to { background-position: 1024px 512px; }
+}
+.fog-drift {
+  opacity: 0.45;
+  mix-blend-mode: screen;
+  animation: fog-drift 90s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fog-drift { animation: none; }
+}

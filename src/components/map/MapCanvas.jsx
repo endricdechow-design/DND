@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { FOG_COLOR, isRoomRevealed, renderFog, roundPoint, shapeCenter } from '../../lib/fog'
+import { CLOUD_TILE, FOG_COLOR, cloudTexture, isRoomRevealed, renderFog, roundPoint, shapeCenter } from '../../lib/fog'
 
 const FOG_RES = 1600 // Auflösung des Nebels (Pixel Breite) – reicht für weiche Kanten
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v))
@@ -37,6 +37,7 @@ export default function MapCanvas({
   const [ready, setReady] = useState(false)
   const [draft, setDraft] = useState(null) // Form, die gerade gezeichnet wird
   const [animate, setAnimate] = useState(false)
+  const [fogMask, setFogMask] = useState(null) // Nebel als Maske für die ziehenden Schwaden
   const gesture = useRef({ pointers: new Map() })
 
   // Größe des Kartenbereichs beobachten
@@ -107,6 +108,14 @@ export default function MapCanvas({
       b.style.opacity = '1'
     }
     renderFog(a, ops, { margin, color: FOG_COLOR })
+    // Ziehende Schwaden nur dort, wo Nebel ist (nur Spieler / Tisch-Bildschirm)
+    if (fogStyle === 'opaque') {
+      try {
+        setFogMask(a.toDataURL('image/png'))
+      } catch {
+        setFogMask(null)
+      }
+    }
     if (fade) {
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
@@ -265,7 +274,7 @@ export default function MapCanvas({
     <div
       ref={boxRef}
       className={`relative select-none overflow-hidden ${className}`}
-      style={{ background: FOG_COLOR, touchAction: 'none', cursor: controlled ? 'default' : drawing ? 'crosshair' : 'grab' }}
+      style={{ background: fogStyle === 'none' ? FOG_COLOR : `${FOG_COLOR} url(${cloudTexture().url}) 0 0 / ${CLOUD_TILE}px`, touchAction: 'none', cursor: controlled ? 'default' : drawing ? 'crosshair' : 'grab' }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -314,6 +323,30 @@ export default function MapCanvas({
               />
             )
           })}
+        {img && fogStyle === 'opaque' && fogMask && (
+          <div
+            className="pointer-events-none absolute"
+            style={{
+              left: -margin * (img.nw / fogW),
+              top: -margin * (img.nw / fogW),
+              width: (fogW + margin * 2) * (img.nw / fogW),
+              height: (fogH + margin * 2) * (img.nw / fogW),
+              filter: `blur(${Math.max(2, img.nw * 0.004)}px)`,
+            }}
+          >
+          <div
+            className="fog-drift absolute inset-0"
+            style={{
+              backgroundImage: `url(${cloudTexture().url})`,
+              backgroundSize: `${img.nw * 0.35}px`,
+              maskImage: `url(${fogMask})`,
+              WebkitMaskImage: `url(${fogMask})`,
+              maskSize: '100% 100%',
+              WebkitMaskSize: '100% 100%',
+            }}
+          />
+          </div>
+        )}
         {img && (
           <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox={`0 0 ${img.nw} ${img.nh}`}>
             {showRooms && rooms.map((room) => <RoomOutline key={room.id} room={room} img={img} revealed={isRoomRevealed(ops, room.id)} />)}
