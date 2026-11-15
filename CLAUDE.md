@@ -35,6 +35,9 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - Feedback (Migration 009): Tabellen `feedback`, `app_admins` (Betreiber; erster `claim_app_admin()` gewinnt), `app_settings`
   (`ntfy_topic`, nur Betreiber). Trigger `notify_new_feedback` → `send_push` → `pg_net` POST an ntfy.sh (Fehler werden geschluckt).
   Bilder im Bucket `feedback`. Komponenten `src/components/feedback/`, Seite `FeedbackPage.jsx`.
+- App/PWA: `public/manifest.webmanifest`, Symbole in `public/icons/`, `public/sw.js` (Service Worker cacht bewusst **nur** die
+  Offline-Seite `public/offline.html` – keine alten Versionen), Registrierung in `src/main.jsx` (nur im Build).
+  `src/lib/install.js` + `src/components/InstallApp.jsx` = „📱 Als App installieren“ im Profil-Menü (iPhone: Anleitung).
 - `src/data/levels.js` – Klassenfähigkeiten Stufe 2–20 und Stufen mit Attributserhöhung
 - `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
 - `wrangler.jsonc` – Veröffentlichung über **Cloudflare** (Workers Builds: `npm run build` → `npx wrangler deploy`, Ordner `dist`).

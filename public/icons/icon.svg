@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="35%" r="75%">
+      <stop offset="0" stop-color="#3b2410"/>
+      <stop offset="0.55" stop-color="#1c1917"/>
+      <stop offset="1" stop-color="#0c0a09"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fde68a"/>
+      <stop offset="0.5" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7c2d12"/>
+      <stop offset="1" stop-color="#451a03"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- W20 -->
+  <g transform="translate(256 262)">
+    <polygon points="0,-170 147,-85 147,85 0,170 -147,85 -147,-85" fill="url(#face)" stroke="url(#gold)" stroke-width="14" stroke-linejoin="round"/>
+    <polygon points="0,-98 85,49 -85,49" fill="#92400e" stroke="url(#gold)" stroke-width="10" stroke-linejoin="round"/>
+    <g stroke="url(#gold)" stroke-width="7" stroke-linecap="round" opacity="0.85">
+      <line x1="0" y1="-170" x2="0" y2="-98"/>
+      <line x1="147" y1="-85" x2="0" y2="-98"/>
+      <line x1="-147" y1="-85" x2="0" y2="-98"/>
+      <line x1="147" y1="-85" x2="85" y2="49"/>
+      <line x1="147" y1="85" x2="85" y2="49"/>
+      <line x1="-147" y1="-85" x2="-85" y2="49"/>
+      <line x1="-147" y1="85" x2="-85" y2="49"/>
+      <line x1="0" y1="170" x2="85" y2="49"/>
+      <line x1="0" y1="170" x2="-85" y2="49"/>
+    </g>
+    <text x="0" y="30" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="bold" fill="#fef3c7" text-anchor="middle">20</text>
+  </g>
+</svg>

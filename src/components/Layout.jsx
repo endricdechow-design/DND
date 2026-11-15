@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth'
 import GiftNotifier from './GiftNotifier'
 import GameLogNotifier from './GameLogNotifier'
 import FeedbackButton from './feedback/FeedbackButton'
+import InstallAppButton from './InstallApp'
 import Modal from './Modal'
 import CompendiumBrowser from './compendium/CompendiumBrowser'
 import { CompendiumProvider, useCompendium } from '../lib/compendium'
@@ -129,6 +130,10 @@ function UserMenu() {
           <Link to="/feedback" role="menuitem" onClick={() => setIsOpen(false)} className="block px-4 py-2.5 text-sm text-stone-300 hover:bg-stone-800 hover:text-amber-200">
             💬 Feedback
           </Link>
+          <InstallAppButton
+            className="block w-full border-t border-stone-800 px-4 py-2.5 text-left text-sm text-amber-300 hover:bg-stone-800"
+            onDone={() => setIsOpen(false)}
+          />
           <button type="button" role="menuitem" onClick={signOut} className="block w-full border-t border-stone-800 px-4 py-2.5 text-left text-sm text-red-300 hover:bg-red-950/40">
             🚪 Abmelden
           </button>
