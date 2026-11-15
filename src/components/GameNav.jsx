@@ -69,7 +69,7 @@ export default function GameNav({ gameId }) {
 
       {/* Handy: feste Leiste unten */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-amber-900/40 bg-stone-950/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgb(0_0_0/0.5)] backdrop-blur sm:hidden"
+        className="bottom-nav fixed inset-x-0 bottom-0 z-40 border-t border-amber-900/40 bg-stone-950 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgb(0_0_0/0.5)] sm:hidden"
         aria-label="Bereiche der Runde"
       >
         <div className="mx-auto flex max-w-md">
@@ -79,14 +79,14 @@ export default function GameNav({ gameId }) {
               to={tab.to}
               end={tab.end}
               className={({ isActive }) =>
-                `flex flex-1 flex-col items-center gap-0.5 px-1 pb-2 pt-2 text-[11px] font-medium transition ${
+                `flex flex-1 flex-col items-center gap-0.5 px-1 pb-1.5 pt-1.5 text-[11px] font-medium transition ${
                   isActive ? 'text-amber-300' : 'text-stone-500 active:text-stone-300'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <span className={`flex h-8 w-12 items-center justify-center rounded-full text-xl transition ${isActive ? 'bg-amber-500/20' : ''}`} aria-hidden>
+                  <span className={`flex h-7 w-12 items-center justify-center rounded-full text-xl transition ${isActive ? 'bg-amber-500/20' : ''}`} aria-hidden>
                     {tab.icon}
                   </span>
                   <span className="truncate">{tab.short ?? tab.label}</span>

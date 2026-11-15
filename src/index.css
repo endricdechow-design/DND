@@ -6,7 +6,13 @@
   --font-body: "Inter", system-ui, sans-serif;
 }
 
+/* Dunkler Grund auch beim „Gummiband“-Scrollen am Handy */
+html {
+  background-color: #0c0a09;
+}
+
 body {
+  overscroll-behavior-y: none;
   @apply min-h-screen bg-stone-950 font-body text-stone-200 antialiased;
   /* Als App auf dem Handy: Platz für Notch und Kamera lassen */
   padding-top: env(safe-area-inset-top);
@@ -136,4 +142,15 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .skeleton, .confirm-pop { animation: none; }
+}
+
+/* Untere Leiste: Fläche nach unten verlängern, damit beim Scrollen
+   (ein-/ausblendende Browserleiste) nie der Hintergrund durchblitzt */
+.bottom-nav::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  height: 120px;
+  background: rgb(12 10 9);
 }
