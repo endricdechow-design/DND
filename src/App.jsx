@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router'
+import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { useAuth } from './lib/auth'
 import Layout from './components/Layout'
 import FullscreenMessage from './components/FullscreenMessage'
@@ -15,9 +15,23 @@ const CompendiumPage = lazy(() => import('./pages/CompendiumPage'))
 const WorkshopPage = lazy(() => import('./pages/WorkshopPage'))
 const FeedbackPage = lazy(() => import('./pages/FeedbackPage'))
 const AdventurePage = lazy(() => import('./pages/AdventurePage'))
+const MapPage = lazy(() => import('./pages/MapPage'))
+const TablePage = lazy(() => import('./pages/TablePage'))
 
 export default function App() {
   const { session, profile, loading, signOut } = useAuth()
+  const location = useLocation()
+
+  // Tisch-Bildschirm: ohne Anmeldung, ohne Kopfzeile
+  if (location.pathname.startsWith('/tisch/')) {
+    return (
+      <Suspense fallback={<FullscreenMessage text="Die Karte wird entrollt …" />}>
+        <Routes>
+          <Route path="/tisch/:code" element={<TablePage />} />
+        </Routes>
+      </Suspense>
+    )
+  }
 
   if (loading) return <FullscreenMessage text="Die Tore öffnen sich …" />
   if (!session) return <AuthPage />
@@ -45,6 +59,7 @@ export default function App() {
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/werkstatt/:adventureId" element={<AdventurePage />} />
         <Route path="/runde/:gameId/bibliothek" element={<LibraryPage />} />
+        <Route path="/runde/:gameId/karte" element={<MapPage />} />
         <Route path="/runde/:gameId/charakter/neu" element={<CharacterWizardPage />} />
         <Route path="/runde/:gameId/charakter/:characterId" element={<CharacterSheetPage />} />
         <Route path="/runde/:gameId/charakter/:characterId/bearbeiten" element={<CharacterWizardPage />} />

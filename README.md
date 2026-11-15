@@ -42,7 +42,13 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 - **Inventar:** Anzahl (z. B. 3 Heiltränke), Gewicht in kg, Traglast = Stärke × 7,5 kg
   - Spieler melden **Fundstücke** selbst („🔍 Etwas gefunden“), der Spielleiter prüft, passt an und bestätigt
   - Wer überladen ist, kann nichts mehr aufsammeln (der Spielleiter kann trotzdem etwas geben)
-- **Schnellnavigation** in jeder Runde: Lobby · Mein Charakter · Bibliothek
+- **Nebelkarte:** Der Spielleiter lädt eine Karte hoch, die Spieler sehen nur, was er aufdeckt (Nebel des Krieges)
+  - Werkzeuge: Rechteck, Vieleck, Pinsel, Verdecken, Rückgängig, alles auf-/zudecken
+  - Räume vorbereiten (auch schon in der Werkstatt) und im Spiel mit einem Tipp aufdecken
+  - Live bei allen Spielern, mit sanftem Auflösen des Nebels; zoomen mit zwei Fingern oder Mausrad
+- **Tisch-Bildschirm:** Fernseher/Laptop/Tablet zeigt per Code-Link dauerhaft die Karte – ohne Anmeldung,
+  der Spielleiter lenkt den Blick („Hierhin schauen“)
+- **Schnellnavigation** in jeder Runde: Lobby · Mein Charakter · Karte · Bibliothek
 
 ## Geplant (in dieser Reihenfolge)
 
@@ -50,8 +56,10 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 2. ✅ Charaktere: Erstellung nach SRD 5.1, Werte automatisch berechnet, Avatar-Bild
 3. ✅ Gruppenansicht: Avatar-Köpfe, Klick zeigt Charakterkarte (mit Sichtbarkeitsstufen)
 4. ✅ Bibliothek des Spielleiters: Karten, Gegenstände, Effekte – freischalten & zuteilen
-5. ⬜ Kampffeld: Raster, Gegner mit Bild, Figuren per Drag & Drop, Initiative
-6. ⬜ Extras: Nebel des Krieges, Abenteuer-Tagebuch, Regelhilfen für Anfänger
+5. ✅ Nebelkarte + Tisch-Bildschirm (Kampffeld Etappe 1)
+6. ⬜ Kampffeld Etappe 2: Spielfiguren per Drag & Drop, Raster
+7. ⬜ Kampffeld Etappe 3: Initiative, Lebensbalken an Figuren, Begegnungen aus der Werkstatt
+8. ⬜ Extras: Abenteuer-Tagebuch
 
 *Gewürfelt wird bewusst weiter mit echten Würfeln am Tisch.*
 
@@ -59,7 +67,8 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 
 - ⬜ Zauber der Grade 4–9 ergänzen (sobald die Charaktere höhere Stufen erreichen)
 - ⬜ Werkstatt Etappe 2: Szenen und Begegnungen mit Schwierigkeitsrechner, „Szene starten“
-- ⬜ Kampffeld (Raster, Figuren, Initiative)
+- ⬜ Kampffeld Etappe 2 und 3 (Figuren, Raster, Initiative)
+- ⬜ Hausregeln: Schritt nach „Runde erstellen“ mit Vorlagen zum Ankreuzen, eigener Punkt in der Runden-Navigation
 
 ## Lizenz der Regelinhalte
 

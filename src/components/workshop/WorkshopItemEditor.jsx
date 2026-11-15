@@ -6,6 +6,7 @@ import { uploadImage } from '../../lib/images'
 import { parseKg } from '../../lib/inventory'
 import { RARITIES, WORKSHOP_TYPES, imageSizeFor } from '../../data/library'
 import CatalogNameInput from '../library/CatalogNameInput'
+import RoomsOverlay from '../map/RoomsOverlay'
 
 const PLACEHOLDERS = {
   item: ['z. B. Spitzhacke des Zwergenkönigs', 'Was kann der Gegenstand?'],
@@ -30,6 +31,8 @@ export default function WorkshopItemEditor({ adventureId, item, defaultType = 'i
   const [imageUrl, setImageUrl] = useState(item?.image_url ?? null)
   const [imageFile, setImageFile] = useState(null)
   const [preview, setPreview] = useState(null)
+  const [rooms, setRooms] = useState(item?.data?.rooms ?? [])
+  const [editingRooms, setEditingRooms] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -59,6 +62,7 @@ export default function WorkshopItemEditor({ adventureId, item, defaultType = 'i
           stat: stat.trim() || undefined,
           ...(type === 'item' ? { rarity: rarityKey, weight: parseKg(weight) ?? undefined } : { rarity: undefined, weight: undefined }),
           ...(type === 'effect' ? { duration: duration.trim() || undefined } : { duration: undefined }),
+          rooms: type === 'map' && rooms.length ? rooms : undefined,
         },
       }
       const { error } = item
@@ -180,6 +184,30 @@ export default function WorkshopItemEditor({ adventureId, item, defaultType = 'i
           )}
         </div>
       </div>
+
+      {type === 'map' && shownImage && (
+        <div className="rounded-xl border border-stone-800 bg-stone-950/40 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-stone-300">🏠 {rooms.length ? `${rooms.length} Räume vorbereitet` : 'Noch keine Räume eingezeichnet'}</p>
+            <button type="button" className="btn-secondary px-3 py-1.5 text-sm" onClick={() => setEditingRooms(true)}>Räume einzeichnen</button>
+          </div>
+          <p className="mt-1 text-xs text-stone-500">
+            Für die Nebelkarte: Zeichne Räume ein und benenne sie. Im Spiel deckst du sie dann mit einem Tipp auf.
+          </p>
+        </div>
+      )}
+      {editingRooms && (
+        <RoomsOverlay
+          title={name || 'Karte'}
+          imageUrl={shownImage}
+          rooms={rooms}
+          onClose={() => setEditingRooms(false)}
+          onSave={(next) => {
+            setRooms(next)
+            setEditingRooms(false)
+          }}
+        />
+      )}
 
       {error && <p className="alert-error">{error}</p>}
       <div className="flex flex-wrap items-center justify-between gap-3">

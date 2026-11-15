@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 
 /**
- * Schnellnavigation innerhalb einer Runde: Lobby · Mein Charakter · Bibliothek
+ * Schnellnavigation innerhalb einer Runde: Lobby · Mein Charakter · Karte · Bibliothek
  * (auf allen Seiten einer Runde oben angezeigt)
  */
 export default function GameNav({ gameId }) {
@@ -30,6 +30,7 @@ export default function GameNav({ gameId }) {
   const tabs = [
     { to: `/runde/${gameId}`, label: 'Lobby', icon: '🏰', end: true },
     ...(myCharacterId ? [{ to: `/runde/${gameId}/charakter/${myCharacterId}`, label: 'Mein Charakter', icon: '🧝', end: false }] : []),
+    { to: `/runde/${gameId}/karte`, label: 'Karte', icon: '🗺️', end: true },
     { to: `/runde/${gameId}/bibliothek`, label: 'Bibliothek', icon: '📚', end: true },
   ]
 

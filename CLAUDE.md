@@ -35,6 +35,14 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - Feedback (Migration 009): Tabellen `feedback`, `app_admins` (Betreiber; erster `claim_app_admin()` gewinnt), `app_settings`
   (`ntfy_topic`, nur Betreiber). Trigger `notify_new_feedback` → `send_push` → `pg_net` POST an ntfy.sh (Fehler werden geschluckt).
   Bilder im Bucket `feedback`. Komponenten `src/components/feedback/`, Seite `FeedbackPage.jsx`.
+- Nebelkarte (Migration 010): Tabelle `battle_maps` (game_id, image_url, `fog` = Liste von Aufdeck-/Verdeck-Schritten,
+  `rooms` = vorbereitete Räume, `view` = Blick des Tisch-Bildschirms, `active` = wird gezeigt, max. eine je Runde).
+  Spieler lesen nur die aktive Karte. RPC `show_battle_map`. Formen relativ zum Bild (0…1), Logik in `src/lib/fog.js`,
+  Anlegen/Löschen in `src/lib/maps.js` (Bild aus der Bibliothek wird kopiert), Komponenten in `src/components/map/`
+  (`MapCanvas` = Anzeige + Zoom + Zeichnen), Seite `MapPage.jsx` (`/runde/:id/karte`). Werkstatt-Karten speichern Räume in
+  `data.rooms` (werden beim Anlegen übernommen). Kanal `map-<gameId>` (Broadcast `changed`).
+- Tisch-Bildschirm: `/tisch/:code` (`TablePage.jsx`, **ohne Anmeldung**, außerhalb von Layout). Tabelle `game_displays`
+  (Code je Runde), RPCs `get_display_code`, `renew_display_code`, `get_display_state(code)` (auch für `anon`, liefert nie Räume).
 - App/PWA: `public/manifest.webmanifest`, Symbole in `public/icons/`, `public/sw.js` (Service Worker cacht bewusst **nur** die
   Offline-Seite `public/offline.html` – keine alten Versionen), Registrierung in `src/main.jsx` (nur im Build).
   `src/lib/install.js` + `src/components/InstallApp.jsx` = „📱 Als App installieren“ im Profil-Menü (iPhone: Anleitung).
