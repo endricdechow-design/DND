@@ -49,13 +49,22 @@ export default function DashboardPage() {
         <JoinGameCard onJoined={(game) => navigate(`/runde/${game.id}`)} />
       </div>
 
-      <Link to="/kompendium" className="card flex items-center gap-4 transition hover:border-amber-600">
-        <span className="text-4xl" aria-hidden>📖</span>
-        <div className="min-w-0">
-          <p className="title text-xl">Kompendium</p>
-          <p className="text-sm text-stone-400">Regeln, Zauber, Gegenstände, Monster und Hausregeln nachschlagen</p>
-        </div>
-      </Link>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Link to="/kompendium" className="card flex items-center gap-4 transition hover:border-amber-600">
+          <span className="text-4xl" aria-hidden>📖</span>
+          <div className="min-w-0">
+            <p className="title text-xl">Kompendium</p>
+            <p className="text-sm text-stone-400">Regeln, Zauber, Gegenstände, Monster und Hausregeln nachschlagen</p>
+          </div>
+        </Link>
+        <Link to="/werkstatt" className="card flex items-center gap-4 transition hover:border-amber-600">
+          <span className="text-4xl" aria-hidden>🛠️</span>
+          <div className="min-w-0">
+            <p className="title text-xl">Spielleiter-Werkstatt</p>
+            <p className="text-sm text-stone-400">Abenteuer vorbereiten und mit einem Klick in deine Runde laden</p>
+          </div>
+        </Link>
+      </div>
 
       <section className="card">
         <div className="mb-4 flex items-center justify-between">

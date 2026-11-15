@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { translateError } from '../../lib/errors'
-import { libraryType, rarity } from '../../data/library'
+import { displayType, rarity } from '../../data/library'
 
 /**
  * Detailansicht eines Eintrags (für Spieler und als Vorschau).
@@ -10,7 +10,7 @@ import { libraryType, rarity } from '../../data/library'
  * groupOnly: Spieler sieht einen Gegenstand, der nur "für alle freigeschaltet" ist (gehört niemandem)
  */
 export default function LibraryViewer({ item, quantity = 1, canUse = false, onUsed, groupOnly = false }) {
-  const type = libraryType(item.type)
+  const type = displayType(item)
   const r = item.type === 'item' ? rarity(item.data?.rarity) : null
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)

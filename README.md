@@ -23,6 +23,8 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
   Fertigkeiten, Magie, Zauber, Gegenstände, Völker, Klassen, 37 Monster mit Werten, Glossar und Spielleiter-Tipps
   - ⓘ-Symbole in der App öffnen direkt die passende Erklärung; Favoriten und „zuletzt angesehen“
   - **Hausregeln:** Spielleiter schreiben eigene Regeln für ihre Runde, die Spieler finden sie im Kompendium
+- **🛠️ Spielleiter-Werkstatt:** Abenteuer unabhängig von einer Runde vorbereiten (Gegenstände, Karten, Handouts,
+  Effekte, NSCs), mit einem Klick versteckt in eine Runde laden („erneut laden“ bringt nur Neues), per Teilen-Code kopieren
 - **Gruppenansicht:** Avatar-Leiste mit Lebensbalken und Zuständen; Klick öffnet die Charakterkarte
   - Mitspieler sehen nur Name, Bild, Volk, Klasse, Stufe, Gesundheit, Zustände und öffentliche Notizen
   - Den vollen Bogen und die privaten Notizen sehen nur der Spieler selbst und der Spielleiter
@@ -54,6 +56,7 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 ## Offene Punkte
 
 - ⬜ Zauber der Grade 4–9 ergänzen (sobald die Charaktere höhere Stufen erreichen)
+- ⬜ Werkstatt Etappe 2: Szenen und Begegnungen mit Schwierigkeitsrechner, „Szene starten“
 - ⬜ Kampffeld (Raster, Figuren, Initiative)
 
 ## Lizenz der Regelinhalte

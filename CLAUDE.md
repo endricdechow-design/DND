@@ -27,6 +27,11 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   `index.js` (führt alles zusammen: Regeln, Zustände, Fertigkeiten, Zauber, Katalog, Völker, Klassen, Monster + `searchCompendium`).
   IDs `kategorie:schlüssel`; ⓘ-Symbole über `<InfoTip id="…" />`. `src/lib/compendium.jsx` = Provider (Pop-up + Hausregeln).
   Tabelle `house_rules` (Migration 007): lesen alle Mitglieder, schreiben nur Spielleiter.
+- Werkstatt (Migration 008): Tabellen `adventures` (Besitzer, `share_code`) und `adventure_items` (type inkl. `npc`), nur für den
+  Besitzer sichtbar. RPCs `load_adventure_into_game` (kopiert versteckt in die Bibliothek, Ordner = Abenteuername,
+  `data.source.item_id` verhindert Doppelte, NSC → handout mit `data.npc`) und `import_shared_adventure(code)`.
+  Bilder im Bucket `workshop` (Ordner = User-ID; werden beim Löschen bewusst nicht entfernt, da Runden sie nutzen).
+  Seiten `WorkshopPage.jsx`, `AdventurePage.jsx`, Editor in `src/components/workshop/`.
 - `src/data/levels.js` – Klassenfähigkeiten Stufe 2–20 und Stufen mit Attributserhöhung
 - `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
 - `wrangler.jsonc` – Veröffentlichung über **Cloudflare** (Workers Builds: `npm run build` → `npx wrangler deploy`, Ordner `dist`).

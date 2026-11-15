@@ -121,6 +121,9 @@ function UserMenu() {
           <Link to="/kompendium" role="menuitem" onClick={() => setIsOpen(false)} className="block px-4 py-2.5 text-sm text-stone-300 hover:bg-stone-800 hover:text-amber-200">
             📖 Kompendium & Hausregeln
           </Link>
+          <Link to="/werkstatt" role="menuitem" onClick={() => setIsOpen(false)} className="block px-4 py-2.5 text-sm text-stone-300 hover:bg-stone-800 hover:text-amber-200">
+            🛠️ Spielleiter-Werkstatt
+          </Link>
           <button type="button" role="menuitem" onClick={signOut} className="block w-full border-t border-stone-800 px-4 py-2.5 text-left text-sm text-red-300 hover:bg-red-950/40">
             🚪 Abmelden
           </button>

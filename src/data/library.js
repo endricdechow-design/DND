@@ -8,6 +8,14 @@ export const LIBRARY_TYPES = [
 
 export const libraryType = (key) => LIBRARY_TYPES.find((t) => t.key === key) ?? LIBRARY_TYPES[0]
 
+// Werkstatt: zusätzlich Nichtspielercharaktere (landen in der Runde als Handout mit data.npc = true)
+export const NPC_TYPE = { key: 'npc', name: 'NSC', plural: 'NSCs', icon: '🧑' }
+export const WORKSHOP_TYPES = [...LIBRARY_TYPES, NPC_TYPE]
+export const workshopType = (key) => WORKSHOP_TYPES.find((t) => t.key === key) ?? LIBRARY_TYPES[0]
+
+/** Art eines Bibliothekseintrags – NSCs aus der Werkstatt werden als NSC angezeigt */
+export const displayType = (item) => (item?.data?.npc ? NPC_TYPE : libraryType(item?.type))
+
 // Seltenheit von Gegenständen (SRD)
 export const RARITIES = [
   { key: 'common', name: 'Gewöhnlich', color: 'text-stone-300' },

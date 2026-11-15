@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { libraryType, rarity } from '../../data/library'
+import { displayType, rarity } from '../../data/library'
 
 /**
  * Kachel für einen Bibliothekseintrag.
@@ -7,7 +7,7 @@ import { libraryType, rarity } from '../../data/library'
  * onToggleVisibility: schneller Freischalten/Verstecken-Knopf (nur für den Spielleiter)
  */
 export default function LibraryCard({ item, assignedNames, quantity = 1, onOpen, onToggleVisibility, onGive }) {
-  const type = libraryType(item.type)
+  const type = displayType(item)
   const r = item.type === 'item' ? rarity(item.data?.rarity) : null
   const isGMView = Boolean(onToggleVisibility)
   const [imageFailed, setImageFailed] = useState(false)
