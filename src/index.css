@@ -108,3 +108,32 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .fog-drift { animation: none; }
 }
+
+/* ---------- Lade-Platzhalter (schimmern) ---------- */
+@keyframes skeleton-shine {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgb(41 37 36 / 0.6) 25%, rgb(68 64 60 / 0.6) 50%, rgb(41 37 36 / 0.6) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shine 1.6s ease-in-out infinite;
+}
+
+/* ---------- Sicherheitsfrage ---------- */
+@keyframes confirm-pop {
+  from { transform: translateY(16px) scale(0.96); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.confirm-pop { animation: confirm-pop 0.18s ease-out both; }
+
+/* ---------- Untere Navigation am Handy: schwebende Elemente darüber setzen ---------- */
+@media (max-width: 639px) {
+  body[data-bottom-nav] .above-bottom-nav {
+    bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .confirm-pop { animation: none; }
+}

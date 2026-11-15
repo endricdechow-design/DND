@@ -7,6 +7,7 @@ import { parseKg } from '../../lib/inventory'
 import { RARITIES, WORKSHOP_TYPES, imageSizeFor } from '../../data/library'
 import CatalogNameInput from '../library/CatalogNameInput'
 import RoomsOverlay from '../map/RoomsOverlay'
+import { ask } from '../../lib/confirm'
 
 const PLACEHOLDERS = {
   item: ['z. B. Spitzhacke des Zwergenkönigs', 'Was kann der Gegenstand?'],
@@ -78,7 +79,7 @@ export default function WorkshopItemEditor({ adventureId, item, defaultType = 'i
   }
 
   async function remove() {
-    if (!confirm(`„${item.name}“ aus dem Abenteuer löschen? (Bereits in Runden geladene Kopien bleiben erhalten.)`)) return
+    if (!(await ask(`„${item.name}“ aus dem Abenteuer löschen? (Bereits in Runden geladene Kopien bleiben erhalten.)`))) return
     setBusy(true)
     const { error } = await supabase.from('adventure_items').delete().eq('id', item.id)
     if (error) {

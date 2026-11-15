@@ -8,6 +8,7 @@ import InstallAppButton from './InstallApp'
 import Modal from './Modal'
 import NameDialog from './NameDialog'
 import { translateError } from '../lib/errors'
+import { ConfirmHost } from '../lib/confirm'
 import CompendiumBrowser from './compendium/CompendiumBrowser'
 import { CompendiumProvider, useCompendium } from '../lib/compendium'
 
@@ -35,6 +36,7 @@ export default function Layout({ children }) {
         <GiftNotifier />
         <GameLogNotifier />
         <FeedbackButton />
+        <ConfirmHost />
       </div>
     </CompendiumProvider>
   )

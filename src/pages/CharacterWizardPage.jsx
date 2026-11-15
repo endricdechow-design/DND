@@ -12,6 +12,8 @@ import {
 import { ChipPicker, ChoiceGrid, StepSection } from '../components/character/ChoiceGrid'
 import AbilityStep from '../components/character/AbilityStep'
 import Avatar from '../components/Avatar'
+import PageHeader from '../components/PageHeader'
+import PageSkeleton from '../components/Skeleton'
 
 const STEPS = ['Volk', 'Klasse', 'Attribute', 'Fertigkeiten', 'Details']
 const ALL_SKILL_KEYS = SKILLS.map((s) => s.key)
@@ -204,7 +206,7 @@ function Wizard({ gameId, characterId }) {
     }
   }
 
-  if (!ready) return <p className="title animate-pulse text-center text-xl">Lade …</p>
+  if (!ready) return <PageSkeleton text="Lade …" />
 
   const preview = deriveCharacter({
     name: draft.name, level: draft.level, race: draft.race, class: draft.class,
@@ -213,12 +215,11 @@ function Wizard({ gameId, characterId }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="title text-3xl">{isEdit ? 'Charakter bearbeiten' : 'Neuer Charakter'}</h1>
+      <PageHeader icon="🧝" eyebrow={isEdit ? 'Anpassen' : 'Ein neuer Held'} title={isEdit ? 'Charakter bearbeiten' : 'Neuer Charakter'}>
         <Link to={isEdit ? `/runde/${gameId}/charakter/${characterId}` : `/runde/${gameId}`} className="btn-ghost">
           Abbrechen
         </Link>
-      </div>
+      </PageHeader>
 
       {/* Fortschritt */}
       <ol className="grid grid-cols-5 gap-1 sm:gap-2">
@@ -399,7 +400,7 @@ function Wizard({ gameId, characterId }) {
           <>
             <div className="grid gap-6 md:grid-cols-[auto_1fr]">
               <div className="flex flex-col items-center gap-3">
-                <Avatar name={draft.name || '?'} src={avatarPreview ?? draft.avatarUrl} size="xl" />
+                <Avatar name={draft.name || '?'} src={avatarPreview ?? draft.avatarUrl} cls={draft.class} size="xl" />
                 <label className="btn-ghost cursor-pointer">
                   📷 {avatarPreview || draft.avatarUrl ? 'Bild ändern' : 'Bild hochladen'}
                   <input

@@ -5,6 +5,7 @@ import MapToolbar from './MapToolbar'
 import RoomList from './RoomList'
 import RoomsEditor from './RoomsEditor'
 import NameDialog from '../NameDialog'
+import { ask } from '../../lib/confirm'
 
 /**
  * Spielleiter: Nebel aufdecken/verdecken, Räume vorbereiten, Tisch-Bildschirm lenken.
@@ -99,8 +100,8 @@ export default function MapEditor({ map, onUpdate, onShow, onDelete }) {
               <input type="checkbox" checked={playerView} onChange={(e) => setPlayerView(e.target.checked)} className="accent-amber-500" />
               👁️ So sehen es die Spieler
             </label>
-            <button type="button" className="btn-ghost px-3 py-2 text-sm" onClick={() => confirm('Wirklich die ganze Karte aufdecken? Die Spieler sehen dann sofort alles.') && addOp({ t: 'all', mode: 'reveal' })}>☀️ Alles aufdecken</button>
-            <button type="button" className="btn-ghost px-3 py-2 text-sm" onClick={() => confirm('Die ganze Karte wieder in Nebel hüllen?') && onUpdate({ fog: [] })}>
+            <button type="button" className="btn-ghost px-3 py-2 text-sm" onClick={async () => (await ask('Wirklich die ganze Karte aufdecken? Die Spieler sehen dann sofort alles.', { confirmLabel: '☀️ Aufdecken' })) && addOp({ t: 'all', mode: 'reveal' })}>☀️ Alles aufdecken</button>
+            <button type="button" className="btn-ghost px-3 py-2 text-sm" onClick={async () => (await ask('Die ganze Karte wieder in Nebel hüllen?', { confirmLabel: '🌫️ Verdecken' })) && onUpdate({ fog: [] })}>
               🌫️ Alles verdecken
             </button>
           </div>

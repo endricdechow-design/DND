@@ -6,6 +6,7 @@ import FullscreenMessage from './components/FullscreenMessage'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import LobbyPage from './pages/LobbyPage'
+import PageSkeleton from './components/Skeleton'
 // Größere Seiten werden erst geladen, wenn man sie öffnet
 const CharacterWizardPage = lazy(() => import('./pages/CharacterWizardPage'))
 const CharacterSheetPage = lazy(() => import('./pages/CharacterSheetPage'))
@@ -50,7 +51,7 @@ export default function App() {
 
   return (
     <Layout>
-      <Suspense fallback={<p className="title animate-pulse text-center text-xl">Lade …</p>}>
+      <Suspense fallback={<PageSkeleton text="Lade …" />}>
         <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/runde/:gameId" element={<LobbyPage />} />

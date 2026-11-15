@@ -14,6 +14,8 @@ import GiveDialog from '../components/library/GiveDialog'
 import FoundItemDialog from '../components/library/FoundItemDialog'
 import ReviewRequestDialog from '../components/library/ReviewRequestDialog'
 import { formatKg, itemWeight, totalWeight } from '../lib/inventory'
+import PageHeader from '../components/PageHeader'
+import PageSkeleton from '../components/Skeleton'
 
 export default function LibraryPage() {
   const { gameId } = useParams()
@@ -130,7 +132,7 @@ function Library({ gameId }) {
     notifyChanged()
   }
 
-  if (!items || !role) return <p className="title animate-pulse text-center text-xl">Öffne die Bibliothek …</p>
+  if (!items || !role) return <PageSkeleton text="Öffne die Bibliothek …" />
 
   const assignedTo = (itemId) => assignments.filter((a) => a.item_id === itemId).map((a) => a.user_id)
   // Spieler: eigene Anzahl je Eintrag, Gewicht und Traglast
@@ -145,19 +147,18 @@ function Library({ gameId }) {
     <div className="space-y-6">
       <GameNav gameId={gameId} />
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="title text-3xl">📚 Bibliothek</h1>
-          <p className="text-stone-400">
-            {isGM ? 'Gegenstände, Karten, Handouts und Effekte deiner Runde.' : 'Alles, was dein Spielleiter für dich freigeschaltet hat.'}
-          </p>
-        </div>
+      <PageHeader
+        icon="📚"
+        title="Bibliothek"
+        eyebrow={isGM ? 'Spielleiter' : 'Dein Inventar'}
+        subtitle={isGM ? 'Gegenstände, Karten, Handouts und Effekte deiner Runde.' : 'Alles, was dein Spielleiter für dich freigeschaltet hat.'}
+      >
         {isGM ? (
           <button className="btn-primary" onClick={() => setEditing({ item: null })}>＋ Neuer Eintrag</button>
         ) : (
           <button className="btn-secondary" onClick={() => setFinding(true)}>🔍 Etwas gefunden</button>
         )}
-      </div>
+      </PageHeader>
 
       {isGM && (
         <GameMasterBanner>

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
 import { WORKSHOP_TYPES } from '../data/library'
+import PageHeader from '../components/PageHeader'
 
 /**
  * Spielleiter-Werkstatt: Übersicht der eigenen Abenteuer.
@@ -52,13 +53,12 @@ export default function WorkshopPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="title text-3xl">🛠️ Spielleiter-Werkstatt</h1>
-        <p className="text-stone-400">
-          Bereite Abenteuer in Ruhe vor – Gegenstände, Karten, Handouts, Effekte und NSCs. Später lädst du sie mit einem Klick in deine Runde.
-          Nur du siehst deine Werkstatt.
-        </p>
-      </div>
+      <PageHeader
+        icon="🛠️"
+        eyebrow="Nur für dich"
+        title="Spielleiter-Werkstatt"
+        subtitle="Bereite Abenteuer in Ruhe vor – Gegenstände, Karten, Handouts, Effekte und NSCs. Später lädst du sie mit einem Klick in deine Runde."
+      />
 
       {error && <p className="alert-error">{error}</p>}
 

@@ -12,3 +12,19 @@ export function hpStatus(percent) {
 export function shortRaceName(name = '') {
   return name.replace(/ \(.*\)/, '')
 }
+
+/** Symbol je Klasse (z. B. als Avatar, wenn es kein Bild gibt) */
+export const CLASS_ICONS = {
+  barbarian: '🪓',
+  bard: '🎻',
+  cleric: '☀️',
+  druid: '🌿',
+  fighter: '⚔️',
+  monk: '👊',
+  paladin: '🛡️',
+  ranger: '🏹',
+  rogue: '🗡️',
+  sorcerer: '🔥',
+  warlock: '👁️',
+  wizard: '🔮',
+}

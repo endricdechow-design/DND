@@ -156,7 +156,7 @@ function GameTile({ game, onOpen }) {
           </>
         ) : hero ? (
           <>
-            <Avatar name={hero.name} src={hero.avatar_url} />
+            <Avatar name={hero.name} src={hero.avatar_url} cls={hero.class} />
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold text-stone-100">{hero.name}</p>
               <p className="truncate text-xs text-violet-300">{heroLine}</p>

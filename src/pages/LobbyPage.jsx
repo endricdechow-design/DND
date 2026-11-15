@@ -11,6 +11,8 @@ import Modal from '../components/Modal'
 import GameNav from '../components/GameNav'
 import PartyCardDetails from '../components/party/PartyCardDetails'
 import { ConditionIcons } from '../components/party/Conditions'
+import { ask } from '../lib/confirm'
+import PageSkeleton from '../components/Skeleton'
 
 // "key" sorgt dafür, dass beim Wechsel in eine andere Runde alles frisch geladen wird
 export default function LobbyPage() {
@@ -114,7 +116,7 @@ function Lobby({ gameId }) {
   }, [gameId, loadMembers])
 
   if (!game || !members) {
-    return <p className="title animate-pulse text-center text-xl">Betrete die Lobby …</p>
+    return <PageSkeleton text="Betrete die Lobby …" />
   }
 
   const me = members.find((m) => m.user_id === profile.id)
@@ -146,20 +148,20 @@ function Lobby({ gameId }) {
   }
 
   async function removeMember(userId, name) {
-    if (!confirm(`${name} wirklich aus der Runde entfernen?`)) return
+    if (!(await ask(`${name} wirklich aus der Runde entfernen?`))) return
     const { error } = await supabase.from('game_members').delete().eq('game_id', gameId).eq('user_id', userId)
     if (error) setError(translateError(error.message))
   }
 
   async function leaveGame() {
-    if (!confirm('Willst du diese Runde wirklich verlassen?')) return
+    if (!(await ask('Willst du diese Runde wirklich verlassen?'))) return
     const { error } = await supabase.from('game_members').delete().eq('game_id', gameId).eq('user_id', profile.id)
     if (error) setError(translateError(error.message))
     else backToDashboard('Du hast die Runde verlassen.')
   }
 
   async function deleteGame() {
-    if (!confirm(`Runde „${game.name}“ endgültig löschen? Alle Spieler verlieren den Zugang.`)) return
+    if (!(await ask(`Runde „${game.name}“ endgültig löschen? Alle Spieler verlieren den Zugang.`))) return
     const { error } = await supabase.from('games').delete().eq('id', gameId)
     if (error) setError(translateError(error.message))
     else backToDashboard('Die Runde wurde gelöscht.')
@@ -310,7 +312,7 @@ function HeroCard({ card, subtitle, gameId, onDetails }) {
       <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_30%,rgb(139_92_246/0.25),transparent_55%)]" aria-hidden />
       <div className="relative flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
         <button type="button" onClick={onDetails} className="relative shrink-0 rounded-full transition hover:scale-[1.03]" title="Details & Zustände">
-          <Avatar name={card.name} src={card.avatar_url} size="xl" />
+          <Avatar name={card.name} src={card.avatar_url} cls={card.class} size="xl" />
           <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-amber-600 bg-stone-950 px-3 py-0.5 font-display text-xs font-bold text-amber-300 shadow-lg">
             Stufe {card.level}
           </span>
@@ -359,7 +361,7 @@ function PartyTile({ card, playerName, subtitle, onClick }) {
       className="group flex h-full w-full flex-col items-center gap-2 rounded-2xl border border-stone-800 bg-stone-900/70 p-4 text-center shadow-lg shadow-black/40 transition hover:-translate-y-0.5 hover:border-amber-600"
     >
       <div className="relative">
-        <Avatar name={card.name} src={card.avatar_url} size="lg" />
+        <Avatar name={card.name} src={card.avatar_url} cls={card.class} size="lg" />
         {card.hp_percent === 0 && <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 text-2xl">💀</span>}
         <span className="absolute -bottom-1 -right-2 rounded-full border border-stone-700 bg-stone-950 px-1.5 text-xs font-bold text-amber-300">{card.level}</span>
       </div>

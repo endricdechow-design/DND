@@ -5,6 +5,7 @@ import { removeImage, uploadImage } from '../../lib/images'
 import { LIBRARY_TYPES, RARITIES, imageSizeFor, libraryType } from '../../data/library'
 import CatalogNameInput from './CatalogNameInput'
 import { parseKg } from '../../lib/inventory'
+import { ask } from '../../lib/confirm'
 
 /**
  * Eintrag anlegen oder bearbeiten (nur Spielleiter).
@@ -109,7 +110,7 @@ export default function LibraryEditor({ gameId, item, assignedUserIds = [], play
   }
 
   async function remove() {
-    if (!confirm(`„${item.name}“ endgültig löschen?`)) return
+    if (!(await ask(`„${item.name}“ endgültig löschen?`))) return
     setSaving(true)
     const { error } = await supabase.from('library_items').delete().eq('id', item.id)
     if (error) {

@@ -120,7 +120,7 @@ export default function GiftNotifier() {
   const text = TEXT[gift.type] ?? TEXT.item
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex justify-center px-4" role="status" aria-live="polite">
+    <div className="above-bottom-nav pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex justify-center px-4" role="status" aria-live="polite">
       <div key={current.key} className="gift-toast pointer-events-auto relative w-full max-w-sm rounded-2xl border-2 border-amber-500 bg-stone-900/95 p-4 backdrop-blur">
         <span className="toast-countdown absolute inset-x-3 bottom-1 h-1 rounded-full bg-amber-400/70" style={{ animationDuration: `${duration}ms` }} />
         {/* Funkeln */}

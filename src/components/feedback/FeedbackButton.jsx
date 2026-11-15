@@ -7,7 +7,7 @@ import Modal from '../Modal'
 import { FEEDBACK_CATEGORIES } from '../../data/feedback'
 
 
-/** Runder 💬-Knopf unten rechts auf jeder Seite */
+/** Kleiner runder 💬-Knopf unten rechts (am Handy über der unteren Navigation) */
 export default function FeedbackButton() {
   const [open, setOpen] = useState(false)
   return (
@@ -15,7 +15,7 @@ export default function FeedbackButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-amber-700/70 bg-stone-900/95 text-xl shadow-lg shadow-black/60 transition hover:border-amber-400 hover:scale-105"
+        className="above-bottom-nav fixed bottom-4 right-3 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-amber-700/50 bg-stone-900/90 text-base opacity-70 shadow-lg shadow-black/60 transition hover:scale-105 hover:border-amber-400 hover:opacity-100 sm:right-4"
         title="Feedback senden"
         aria-label="Feedback senden"
       >

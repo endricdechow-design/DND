@@ -4,6 +4,7 @@ import { translateError } from '../../lib/errors'
 import { RARITIES } from '../../data/library'
 import { parseKg } from '../../lib/inventory'
 import CatalogNameInput from './CatalogNameInput'
+import { ask } from '../../lib/confirm'
 
 /**
  * Spielleiter prüft ein Fundstück: ggf. anpassen, dann annehmen oder ablehnen.
@@ -19,7 +20,7 @@ export default function ReviewRequestDialog({ request, playerLabel, onDone }) {
   const [error, setError] = useState('')
 
   async function decide(approve) {
-    if (!approve && !confirm(`Fund „${request.name}“ wirklich ablehnen?`)) return
+    if (!approve && !(await ask(`Fund „${request.name}“ wirklich ablehnen?`))) return
     setBusy(true)
     setError('')
     const data = {

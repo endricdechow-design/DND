@@ -18,7 +18,7 @@ export default function PartyCardDetails({ card, playerName, canEditConditions, 
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-4 pr-8">
-        <Avatar name={card.name} src={card.avatar_url} size="xl" />
+        <Avatar name={card.name} src={card.avatar_url} cls={card.class} size="xl" />
         <div className="min-w-0">
           <h2 className="title break-words text-2xl sm:text-3xl">{card.name}</h2>
           <p className="text-stone-200">

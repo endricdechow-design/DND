@@ -4,6 +4,7 @@ import MapToolbar from './MapToolbar'
 import { TOOLS } from '../../lib/fog'
 import RoomList from './RoomList'
 import NameDialog from '../NameDialog'
+import { ask } from '../../lib/confirm'
 
 const ROOM_TOOLS = TOOLS.filter((t) => t.key !== 'brush')
 
@@ -31,7 +32,7 @@ export default function RoomsEditor({ imageUrl, rooms, onChange, height = 'h-[60
       <RoomList
         rooms={rooms}
         onRename={setRenaming}
-        onDelete={(room) => confirm(`Raum „${room.name}“ löschen?`) && onChange(rooms.filter((r) => r.id !== room.id))}
+        onDelete={async (room) => (await ask(`Raum „${room.name}“ löschen?`)) && onChange(rooms.filter((r) => r.id !== room.id))}
         emptyText="Noch keine Räume. Zeichne mit ▭ oder ⬠ einen Bereich ein und gib ihm einen Namen."
       />
 

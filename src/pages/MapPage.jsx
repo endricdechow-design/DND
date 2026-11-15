@@ -12,6 +12,9 @@ import MapCanvas from '../components/map/MapCanvas'
 import MapEditor from '../components/map/MapEditor'
 import NewMapDialog from '../components/map/NewMapDialog'
 import DisplayDialog from '../components/map/DisplayDialog'
+import { ask } from '../lib/confirm'
+import PageHeader from '../components/PageHeader'
+import PageSkeleton from '../components/Skeleton'
 
 const GM_GUIDE = 'spielleiter:nebelkarte'
 
@@ -87,7 +90,7 @@ function Maps({ gameId }) {
 
   const notifyChanged = () => channelRef.current?.send({ type: 'broadcast', event: 'changed', payload: {} })
 
-  if (!maps || !role) return <p className="title animate-pulse text-center text-xl">Entrolle die Karte …</p>
+  if (!maps || !role) return <PageSkeleton text="Entrolle die Karte …" />
 
   // ---------------- Spieler ----------------
   if (!isGM) {
@@ -95,10 +98,9 @@ function Maps({ gameId }) {
     return (
       <div className="space-y-6">
         <GameNav gameId={gameId} />
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="title text-3xl">🗺️ {map ? map.name : 'Karte'}</h1>
+        <PageHeader icon="🗺️" eyebrow="Karte" title={map ? map.name : 'Karte'}>
           <button type="button" className="btn-ghost px-3 py-2 text-sm" onClick={() => openCompendium('einstieg:karte')}>❓ Hilfe</button>
-        </div>
+        </PageHeader>
         {error && <p className="alert-error">{error}</p>}
         {map ? (
           <MapCanvas key={map.id} imageUrl={map.image_url} ops={map.fog} fogStyle="opaque" className="h-[70vh] min-h-80 rounded-2xl border border-stone-800" />
@@ -133,7 +135,7 @@ function Maps({ gameId }) {
   }
 
   async function remove(map) {
-    if (!confirm(`Karte „${map.name}“ löschen? Der aufgedeckte Nebel geht dabei verloren.`)) return
+    if (!(await ask(`Karte „${map.name}“ löschen? Der aufgedeckte Nebel geht dabei verloren.`))) return
     try {
       await deleteMap(map)
       setSelectedId(null)
@@ -148,17 +150,11 @@ function Maps({ gameId }) {
     <div className="space-y-6">
       <GameNav gameId={gameId} />
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="title text-3xl">🗺️ Karte</h1>
-          <p className="text-stone-400">Karten mit Nebel – du deckst auf, was die Gruppe sieht.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" className="btn-ghost" onClick={() => openCompendium(GM_GUIDE)}>❓ So funktioniert's</button>
-          <button type="button" className="btn-secondary" onClick={() => setShowDisplay(true)}>📺 Tisch-Bildschirm</button>
-          <button type="button" className="btn-primary" onClick={() => setCreating(true)}>＋ Neue Karte</button>
-        </div>
-      </div>
+      <PageHeader icon="🗺️" eyebrow="Spielleiter" title="Karte" subtitle="Karten mit Nebel – du deckst auf, was die Gruppe sieht.">
+        <button type="button" className="btn-ghost" onClick={() => openCompendium(GM_GUIDE)}>❓ So funktioniert's</button>
+        <button type="button" className="btn-secondary" onClick={() => setShowDisplay(true)}>📺 Tisch-Bildschirm</button>
+        <button type="button" className="btn-primary" onClick={() => setCreating(true)}>＋ Neue Karte</button>
+      </PageHeader>
 
       <GameMasterBanner>
         Du siehst die ganze Karte, der Nebel ist für dich nur abgedunkelt. Die Spieler (und der Tisch-Bildschirm) sehen nur, was du aufdeckst –

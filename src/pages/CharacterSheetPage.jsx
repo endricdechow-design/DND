@@ -18,6 +18,8 @@ import { spellRules } from '../data/spells'
 import { hpStatus } from '../lib/party'
 import OwnedFromLibrary from '../components/library/OwnedFromLibrary'
 import SpellsSection from '../components/spells/SpellsSection'
+import { ask } from '../lib/confirm'
+import PageSkeleton from '../components/Skeleton'
 
 export default function CharacterSheetPage() {
   const { gameId, characterId } = useParams()
@@ -105,7 +107,7 @@ function Sheet({ gameId, characterId }) {
     )
   }
 
-  if (!character) return <p className="title animate-pulse text-center text-xl">Lade Charakterbogen …</p>
+  if (!character) return <PageSkeleton text="Lade Charakterbogen …" />
 
   const canEdit = character.user_id === profile.id || isGM
   const c = deriveCharacter(character)
@@ -126,7 +128,7 @@ function Sheet({ gameId, characterId }) {
   async function undoLastLevel() {
     const last = (data.levelUps ?? []).find((lu) => lu.level === c.level)
     if (!last) return
-    if (!confirm(`Aufstieg auf Stufe ${c.level} rückgängig machen?`)) return
+    if (!(await ask(`Aufstieg auf Stufe ${c.level} rückgängig machen?`))) return
     const newData = { ...data, levelUps: data.levelUps.filter((lu) => lu.level < c.level) }
     const prev = deriveCharacter({ ...character, level: c.level - 1, data: newData })
     const hpCurrent = Math.max(0, Math.min(prev.hpMax, character.hp_current - (c.hpMax - prev.hpMax)))
@@ -134,7 +136,7 @@ function Sheet({ gameId, characterId }) {
   }
 
   async function deleteCharacter() {
-    if (!confirm(`„${character.name}“ wirklich endgültig löschen?`)) return
+    if (!(await ask(`„${character.name}“ wirklich endgültig löschen?`))) return
     const { error } = await supabase.from('characters').delete().eq('id', characterId)
     if (error) return setError(translateError(error.message))
     if (character.avatar_url) removeAvatar(character.avatar_url)
@@ -165,7 +167,7 @@ function Sheet({ gameId, characterId }) {
         <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_30%,rgb(139_92_246/0.25),transparent_55%)]" aria-hidden />
         <div className="relative flex flex-col items-center gap-5 text-center sm:flex-row sm:items-center sm:text-left">
           <div className="relative shrink-0">
-            <Avatar name={character.name} src={character.avatar_url} size="xl" />
+            <Avatar name={character.name} src={character.avatar_url} cls={character.class} size="xl" />
             <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-amber-600 bg-stone-950 px-3 py-0.5 font-display text-xs font-bold text-amber-300 shadow-lg">
               Stufe {c.level}
             </span>

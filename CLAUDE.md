@@ -12,9 +12,11 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - Öffentliche Supabase-Werte stehen bewusst in `.env` (Publishable Key). Nie einen secret/service_role Key committen.
 
 ## Struktur
+- Sicherheitsfragen **nie** mit `confirm()`, sondern `await ask('… löschen?')` aus `src/lib/confirm.jsx` (eigenes Fenster, rot bei löschen/entfernen).
 - `src/lib/` – Supabase-Client, Auth-Kontext (`useAuth()` → `session`, `profile`, `signOut`, `updateUsername`), Fehlerübersetzung
 - `src/pages/` – eine Datei pro Seite; `src/components/` – wiederverwendbare Bausteine (`character/` für den Erschaffungs-Assistenten, `party/` für die Gruppenansicht, `library/` für die Bibliothek,
-  `Modal.jsx` für Pop-ups (per Portal in `<body>`), `AreaTile.jsx` = Kachel zu einem Bereich (Lobby + Startseite), `NameDialog.jsx` = kleines Namens-Pop-up, `GameNav.jsx` als Navigation auf allen Seiten einer Runde,
+  `Modal.jsx` für Pop-ups (per Portal in `<body>`), `AreaTile.jsx` = Kachel zu einem Bereich (Lobby + Startseite), `NameDialog.jsx` = kleines Namens-Pop-up, `PageHeader.jsx` = einheitlicher Seitenkopf, `Skeleton.jsx` = Lade-Platzhalter,
+  `GameNav.jsx` als Navigation auf allen Seiten einer Runde (am Handy feste Leiste unten; schwebende Elemente mit Klasse `above-bottom-nav`),
   `GiftNotifier.jsx` = globale Einblendung bei neuen Zuteilungen)
 - `src/data/srd.js` – Regeldaten (Völker, Klassen, Fertigkeiten, Rüstungen …); `src/lib/character.js` – alle Berechnungen
   (`deriveCharacter(row)`). Abgeleitete Werte (TP-Maximum, RK, Boni) werden **nie** gespeichert, sondern immer berechnet.
@@ -39,7 +41,7 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   `rooms` = vorbereitete Räume, `view` = Blick des Tisch-Bildschirms, `active` = wird gezeigt, max. eine je Runde).
   Spieler lesen nur die aktive Karte. RPC `show_battle_map`. Formen relativ zum Bild (0…1), Logik in `src/lib/fog.js`,
   Anlegen/Löschen in `src/lib/maps.js` (Bild aus der Bibliothek wird kopiert), Komponenten in `src/components/map/`
-  (`MapCanvas` = Anzeige + Zoom + Zeichnen), Seite `MapPage.jsx` (`/runde/:id/karte`). Werkstatt-Karten speichern Räume in
+  (`MapCanvas` = Anzeige + Zoom + Zeichnen; Nebel = Wolken-Textur `cloudTexture()` + ziehende Schwaden `.fog-drift`), Seite `MapPage.jsx` (`/runde/:id/karte`). Werkstatt-Karten speichern Räume in
   `data.rooms` (werden beim Anlegen übernommen). Kanal `map-<gameId>` (Broadcast `changed`).
 - Tisch-Bildschirm: `/tisch/:code` (`TablePage.jsx`, **ohne Anmeldung**, außerhalb von Layout). Tabelle `game_displays`
   (Code je Runde), RPCs `get_display_code`, `renew_display_code`, `get_display_state(code)` (auch für `anon`, liefert nie Räume).

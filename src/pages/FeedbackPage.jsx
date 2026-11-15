@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { translateError } from '../lib/errors'
 import { FEEDBACK_CATEGORIES } from '../data/feedback'
+import { ask } from '../lib/confirm'
+import PageHeader from '../components/PageHeader'
+import PageSkeleton from '../components/Skeleton'
 
 /**
  * Feedback-Eingang (nur für den Betreiber der App) + Push-Einrichtung.
@@ -43,23 +46,25 @@ export default function FeedbackPage() {
   }
 
   async function remove(item) {
-    if (!confirm('Dieses Feedback löschen?')) return
+    if (!(await ask('Dieses Feedback löschen?'))) return
     const { error } = await supabase.from('feedback').delete().eq('id', item.id)
     if (error) return setError(translateError(error.message))
     setItems((list) => list.filter((i) => i.id !== item.id))
   }
 
-  if (isAdmin === null) return <p className="title animate-pulse text-center text-xl">Lade …</p>
+  if (isAdmin === null) return <PageSkeleton text="Lade …" />
 
   const shown = items.filter((i) => filter === 'all' || i.status === filter)
   const category = (key) => FEEDBACK_CATEGORIES.find((c) => c.key === key) ?? FEEDBACK_CATEGORIES[0]
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="title text-3xl">💬 Feedback</h1>
-        <p className="text-stone-400">{isAdmin ? 'Alle Rückmeldungen aus eurer Gruppe.' : 'Deine Rückmeldungen – neues Feedback sendest du über den 💬-Knopf unten rechts.'}</p>
-      </div>
+      <PageHeader
+        icon="💬"
+        eyebrow={isAdmin ? 'Betreiber' : 'Deine Rückmeldungen'}
+        title="Feedback"
+        subtitle={isAdmin ? 'Alle Rückmeldungen aus eurer Gruppe.' : 'Neues Feedback sendest du über den kleinen 💬-Knopf unten rechts.'}
+      />
 
       {error && <p className="alert-error">{error}</p>}
 

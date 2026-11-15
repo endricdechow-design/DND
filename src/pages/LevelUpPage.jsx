@@ -6,6 +6,7 @@ import { ABILITIES, byKey, CLASSES, RACES } from '../data/srd'
 import { featuresAtLevel, getsSpellsAt, isAsiLevel } from '../data/levels'
 import { abilityMod, averageHitDie, deriveCharacter, formatMod, proficiencyBonus } from '../lib/character'
 import Avatar from '../components/Avatar'
+import PageSkeleton from '../components/Skeleton'
 
 export default function LevelUpPage() {
   const { gameId, characterId } = useParams()
@@ -40,7 +41,7 @@ function LevelUp({ gameId, characterId }) {
     }
   }, [characterId, gameId, navigate])
 
-  if (!character) return <p className="title animate-pulse text-center text-xl">Lade …</p>
+  if (!character) return <PageSkeleton text="Lade …" />
 
   const current = deriveCharacter(character)
   const cls = byKey(CLASSES, character.class)
@@ -113,20 +114,20 @@ function LevelUp({ gameId, characterId }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link to={sheetLink} className="btn-ghost">Abbrechen</Link>
-      </div>
-
-      <section className="card flex items-center gap-4">
-        <Avatar name={character.name} src={character.avatar_url} size="lg" />
-        <div className="min-w-0">
-          <p className="text-sm uppercase tracking-widest text-stone-500">Stufenaufstieg</p>
-          <h1 className="title truncate text-2xl sm:text-3xl">{character.name}</h1>
-          <p className="text-lg text-stone-200">
-            Stufe {character.level} <span className="text-amber-400">→ {newLevel}</span>
-          </p>
+      <header className="relative overflow-hidden rounded-2xl border-2 border-amber-600/50 bg-gradient-to-br from-amber-900/40 via-stone-900/80 to-violet-950/40 p-5 shadow-2xl shadow-amber-950/40 sm:p-6">
+        <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgb(245_158_11/0.25),transparent_60%)]" aria-hidden />
+        <div className="relative flex flex-wrap items-center gap-4">
+          <Avatar name={character.name} src={character.avatar_url} cls={character.class} size="lg" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs uppercase tracking-[0.3em] text-amber-400">✨ Stufenaufstieg</p>
+            <h1 className="title truncate text-2xl sm:text-3xl">{character.name}</h1>
+            <p className="font-display text-lg text-stone-200">
+              Stufe {character.level} <span className="text-amber-300">→ {newLevel}</span>
+            </p>
+          </div>
+          <Link to={sheetLink} className="btn-ghost">Abbrechen</Link>
         </div>
-      </section>
+      </header>
 
       {/* 1. Trefferpunkte */}
       <section className="card space-y-4">

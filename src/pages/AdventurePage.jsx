@@ -6,6 +6,8 @@ import { translateError } from '../lib/errors'
 import { WORKSHOP_TYPES, rarity } from '../data/library'
 import Modal from '../components/Modal'
 import WorkshopItemEditor from '../components/workshop/WorkshopItemEditor'
+import { ask } from '../lib/confirm'
+import PageSkeleton from '../components/Skeleton'
 
 export default function AdventurePage() {
   const { adventureId } = useParams()
@@ -40,7 +42,7 @@ function Adventure({ adventureId }) {
     load()
   }, [load])
 
-  if (!adventure) return <p className="title animate-pulse text-center text-xl">Öffne das Abenteuer …</p>
+  if (!adventure) return <PageSkeleton text="Öffne das Abenteuer …" />
 
   async function saveField(patch) {
     setAdventure((a) => ({ ...a, ...patch }))
@@ -49,7 +51,7 @@ function Adventure({ adventureId }) {
   }
 
   async function deleteAdventure() {
-    if (!confirm(`Abenteuer „${adventure.name}“ mit allen Inhalten löschen? (In Runden geladene Kopien bleiben erhalten.)`)) return
+    if (!(await ask(`Abenteuer „${adventure.name}“ mit allen Inhalten löschen? (In Runden geladene Kopien bleiben erhalten.)`))) return
     const { error } = await supabase.from('adventures').delete().eq('id', adventureId)
     if (error) return setError(translateError(error.message))
     navigate('/werkstatt', { replace: true })

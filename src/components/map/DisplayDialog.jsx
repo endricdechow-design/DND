@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { translateError } from '../../lib/errors'
+import { ask } from '../../lib/confirm'
 
 /** Spielleiter: Link + Code für den Tisch-Bildschirm */
 export default function DisplayDialog({ gameId }) {
@@ -28,7 +29,7 @@ export default function DisplayDialog({ gameId }) {
   }
 
   async function renew() {
-    if (!confirm('Neuen Code erzeugen? Bildschirme mit dem alten Link zeigen danach nichts mehr an.')) return
+    if (!(await ask('Neuen Code erzeugen? Bildschirme mit dem alten Link zeigen danach nichts mehr an.'))) return
     const { data, error } = await supabase.rpc('renew_display_code', { p_game_id: gameId })
     if (error) setError(translateError(error.message))
     else setCode(data)

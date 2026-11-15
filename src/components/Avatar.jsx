@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { CLASS_ICONS } from '../lib/party'
 
-// Runder Avatar: zeigt das Charakterbild oder – falls keins da ist bzw. es nicht lädt – den Anfangsbuchstaben
-export default function Avatar({ name = '?', src, variant = 'player', size = 'md' }) {
+// Runder Avatar: zeigt das Charakterbild oder – falls keins da ist bzw. es nicht lädt – das Klassen-Symbol
+// (wenn cls bekannt ist) bzw. den Anfangsbuchstaben
+export default function Avatar({ name = '?', src, variant = 'player', size = 'md', cls }) {
   const [failedSrc, setFailedSrc] = useState(null)
   const sizes = {
     sm: 'h-8 w-8 text-sm',
@@ -23,6 +25,18 @@ export default function Avatar({ name = '?', src, variant = 'player', size = 'md
     )
   }
 
+  const icon = cls ? CLASS_ICONS[cls] : null
+  if (icon) {
+    return (
+      <div
+        className={`flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-700 to-stone-900 ring-2 ${ring} ${sizes[size]}`}
+        title={name}
+      >
+        <span className="scale-90" aria-hidden>{icon}</span>
+        <span className="sr-only">{name}</span>
+      </div>
+    )
+  }
   const colors = variant === 'gm' ? 'bg-amber-600 text-stone-950' : 'bg-violet-800 text-violet-100'
   return (
     <div className={`flex shrink-0 items-center justify-center rounded-full font-display font-bold ${sizes[size]} ${colors}`}>

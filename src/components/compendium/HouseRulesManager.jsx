@@ -5,6 +5,7 @@ import { useCompendium } from '../../lib/compendium'
 import { translateError } from '../../lib/errors'
 import Modal from '../Modal'
 import { RichText } from './EntryView'
+import { ask } from '../../lib/confirm'
 
 /**
  * Spielleiter: Hausregeln seiner Runden anlegen, bearbeiten und löschen.
@@ -96,7 +97,7 @@ function HouseRuleEditor({ rule, gameId: initialGame, games, onDone }) {
   }
 
   async function remove() {
-    if (!confirm(`Hausregel „${rule.title}“ löschen?`)) return
+    if (!(await ask(`Hausregel „${rule.title}“ löschen?`))) return
     setBusy(true)
     const { error } = await supabase.from('house_rules').delete().eq('id', rule.id)
     setBusy(false)
