@@ -3,13 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
-import { shortRaceName } from '../lib/party'
+import { hpStatus, shortRaceName } from '../lib/party'
 import { CLASSES, RACES, byKey } from '../data/srd'
 import Avatar from '../components/Avatar'
 import Modal from '../components/Modal'
 import GameNav from '../components/GameNav'
-import GameMasterBanner from '../components/GameMasterBanner'
-import PartyBar from '../components/party/PartyBar'
 import PartyCardDetails from '../components/party/PartyCardDetails'
 import { ConditionIcons } from '../components/party/Conditions'
 
@@ -31,6 +29,7 @@ function Lobby({ gameId }) {
   const [error, setError] = useState('')
   const [live, setLive] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [activeMap, setActiveMap] = useState(null) // gerade gezeigte Karte
 
   const backToDashboard = useCallback(
     (notice) => navigate('/', { replace: true, state: notice ? { notice } : undefined }),
@@ -84,6 +83,9 @@ function Lobby({ gameId }) {
       .eq('game_id', gameId)
       .eq('status', 'pending')
     setOpenFinds(count ?? 0)
+    // Gerade gezeigte Karte (Fehler ignorieren, falls die Kartenfunktion noch nicht eingerichtet ist)
+    const { data: map } = await supabase.from('battle_maps').select('id, name').eq('game_id', gameId).eq('active', true).maybeSingle()
+    setActiveMap(map ?? null)
   }, [gameId, profile.id, backToDashboard])
 
   // Realtime: bei Änderungen an Teilnehmern oder Charakteren neu laden
@@ -97,6 +99,7 @@ function Lobby({ gameId }) {
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'game_members' }, () => loadMembers())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'party_cards', filter: `game_id=eq.${gameId}` }, () => loadMembers())
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'party_cards' }, () => loadMembers())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'battle_maps', filter: `game_id=eq.${gameId}` }, () => loadMembers())
       .subscribe((status) => setLive(status === 'SUBSCRIBED'))
 
     // Neue Protokoll-Meldung (z. B. Fund gemeldet) → Zähler aktualisieren
@@ -161,172 +164,122 @@ function Lobby({ gameId }) {
     else backToDashboard('Die Runde wurde gelöscht.')
   }
 
+  const raceClass = (card) =>
+    [shortRaceName(byKey(RACES, card.race)?.name), byKey(CLASSES, card.class)?.name].filter(Boolean).join(' · ')
+  // Gruppe: alle anderen Spieler (mein eigener Held steht schon oben)
+  const others = players.filter((m) => m.user_id !== profile.id)
+
   return (
     <div className="space-y-6">
       <GameNav gameId={gameId} />
 
-      {isGM && (
-        <GameMasterBanner>
-          Du leitest diese Runde. Du siehst die vollen Charakterbögen aller Spieler, kannst sie bearbeiten,
-          Zustände vergeben und Spieler entfernen. Tippe auf einen Charakter, um loszulegen.
-        </GameMasterBanner>
-      )}
-
-      {/* Kopfbereich */}
-      <section className="card flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 text-sm uppercase tracking-widest text-stone-500">
-            Lobby
-            <span className={isGM ? 'badge-gm normal-case tracking-normal' : 'badge-player normal-case tracking-normal'}>
-              {isGM ? 'Du bist Spielleiter' : 'Du bist Spieler'}
-            </span>
-          </p>
-          <h1 className="title mt-1 break-words text-3xl sm:text-4xl">{game.name}</h1>
-          <p className="mt-2 flex items-center gap-2 text-sm text-stone-400">
-            <span className={`h-2.5 w-2.5 rounded-full ${live ? 'animate-pulse bg-emerald-400' : 'bg-stone-600'}`} />
-            {live ? 'Live verbunden' : 'Verbinde …'}
-          </p>
+      {/* ---------- Kopf: Name der Runde ---------- */}
+      <header className="relative overflow-hidden rounded-2xl border border-amber-900/40 bg-gradient-to-br from-amber-950/50 via-stone-900/80 to-violet-950/40 px-5 py-6 shadow-2xl shadow-black/50 sm:px-8">
+        <span className="pointer-events-none absolute -right-6 -top-10 select-none text-[9rem] leading-none opacity-[0.07]" aria-hidden>🐉</span>
+        <div className="relative flex flex-wrap items-center gap-2 text-xs">
+          <span className={isGM ? 'badge-gm' : 'badge-player'}>{isGM ? '📜 Du leitest diese Runde' : '🗡️ Du bist Spieler'}</span>
+          <span className="flex items-center gap-1.5 rounded-full bg-stone-950/50 px-2.5 py-0.5 text-stone-400">
+            <span className={`h-2 w-2 rounded-full ${live ? 'animate-pulse bg-emerald-400' : 'bg-stone-600'}`} />
+            {live ? 'Live' : 'Verbinde …'}
+          </span>
         </div>
-
-        <div className="shrink-0 rounded-xl border border-amber-800/50 bg-stone-950/60 p-4 text-center">
-          <p className="mb-1 text-xs uppercase tracking-widest text-stone-500">Einladungscode</p>
-          <p className="font-display text-4xl font-bold tracking-[0.3em] text-amber-300">{game.invite_code}</p>
-          <button onClick={copyCode} className="mt-2 text-sm text-amber-500 hover:text-amber-300">
-            {copied ? '✓ Kopiert!' : 'Code kopieren'}
-          </button>
+        <h1 className="title relative mt-2 break-words text-3xl sm:text-5xl">{game.name}</h1>
+        <div className="relative mt-3 flex items-center gap-3" aria-hidden>
+          <span className="h-px flex-1 bg-gradient-to-r from-amber-600/60 to-transparent" />
+          <span className="text-amber-600/70">✦</span>
+          <span className="h-px flex-1 bg-gradient-to-l from-amber-600/60 to-transparent" />
         </div>
-      </section>
+        <p className="relative mt-3 text-sm text-stone-400">
+          {players.length === 0 ? 'Noch keine Gefährten' : `${players.length} ${players.length === 1 ? 'Gefährte' : 'Gefährten'}`}
+          {gm && <> · Spielleiter: <span className="text-amber-300">{gm.profiles?.username ?? 'Unbekannt'}</span></>}
+        </p>
+      </header>
 
       {error && <p className="alert-error">{error}</p>}
 
-      {/* Avatar-Leiste der Gruppe */}
-      <PartyBar cards={cards} myUserId={profile.id} onSelect={(card) => setSelectedId(card.character_id)} />
-
-      {/* Mein Charakter (nur für Spieler) */}
-      {!isGM && !myCard && (
-        <section className="card flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-          <div className="text-5xl" aria-hidden>🧝</div>
-          <div className="flex-1">
-            <h2 className="title text-2xl">Erschaffe deinen Helden</h2>
-            <p className="text-stone-400">Wähle Volk, Klasse und Werte – die App rechnet alles für dich aus.</p>
+      {/* ---------- 1. Mein Held (Spieler) bzw. Spielleiter-Tisch ---------- */}
+      {isGM ? (
+        <section className="card space-y-4 p-4 sm:p-6">
+          <h2 className="title text-2xl">📜 Spielleiter-Tisch</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <AreaTile to={`/runde/${gameId}/karte`} icon="🗺️" title="Karte" text={activeMap ? `Gezeigt: ${activeMap.name}` : 'Nebelkarten & Tisch-Bildschirm'} highlight={!!activeMap} />
+            <AreaTile
+              to={`/runde/${gameId}/bibliothek`}
+              icon="📚"
+              title="Bibliothek"
+              text="Gegenstände, Handouts & Effekte"
+              badge={openFinds > 0 ? `🔍 ${openFinds} ${openFinds === 1 ? 'offener Fund' : 'offene Funde'}` : null}
+            />
           </div>
-          <Link to={`/runde/${gameId}/charakter/neu`} className="btn-primary">✨ Charakter erstellen</Link>
+        </section>
+      ) : myCard ? (
+        <HeroCard card={myCard} subtitle={raceClass(myCard)} gameId={gameId} onDetails={() => setSelectedId(myCard.character_id)} />
+      ) : (
+        <section className="card relative overflow-hidden text-center">
+          <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgb(245_158_11/0.18),transparent_60%)]" aria-hidden />
+          <div className="relative space-y-3 py-4">
+            <div className="text-6xl" aria-hidden>🧝</div>
+            <h2 className="title text-3xl">Erschaffe deinen Helden</h2>
+            <p className="mx-auto max-w-md text-stone-400">Wähle Volk, Klasse und Werte – die App rechnet alles für dich aus.</p>
+            <Link to={`/runde/${gameId}/charakter/neu`} className="btn-primary">✨ Charakter erstellen</Link>
+          </div>
         </section>
       )}
-      {!isGM && myCard && (
-        <Link
-          to={`/runde/${gameId}/charakter/${myCard.character_id}`}
-          className="card flex items-center gap-4 transition hover:border-amber-600"
-        >
-          <Avatar name={myCard.name} src={myCard.avatar_url} size="lg" />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs uppercase tracking-widest text-stone-500">Dein Charakter</p>
-            <p className="title truncate text-2xl">{myCard.name}</p>
-          </div>
-          <span className="btn-ghost shrink-0">
-            <span className="hidden sm:inline">Bogen öffnen</span> →
-          </span>
-        </Link>
+
+      {/* ---------- 2. Die Gruppe ---------- */}
+      <section className="space-y-3">
+        <div className="flex items-end justify-between gap-3 px-1">
+          <h2 className="title text-2xl">{isGM ? '⚔️ Deine Gruppe' : '⚔️ Deine Gefährten'}</h2>
+          {isGM && <span className="hidden text-xs text-stone-500 sm:inline">Antippen für Details & Zustände</span>}
+        </div>
+        {others.length === 0 ? (
+          <p className="card py-8 text-center text-stone-400">
+            {isGM ? 'Noch keine Spieler da.' : 'Du bist noch allein unterwegs.'} Teile den Einladungscode unten mit deiner Gruppe!
+          </p>
+        ) : (
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {others.map((m) => {
+              const card = cardOf(m.user_id)
+              const name = m.profiles?.username ?? 'Unbekannt'
+              return (
+                <li key={m.user_id} className="flex flex-col">
+                  <PartyTile card={card} playerName={name} subtitle={card ? raceClass(card) : ''} onClick={card ? () => setSelectedId(card.character_id) : null} />
+                  {isGM && (
+                    <button onClick={() => removeMember(m.user_id, name)} className="mt-1 rounded-md px-2 py-1 text-xs text-stone-600 hover:bg-red-950/60 hover:text-red-300">
+                      entfernen
+                    </button>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </section>
+
+      {/* ---------- 3. Bereiche (Spieler) ---------- */}
+      {!isGM && (
+        <section className="grid gap-3 sm:grid-cols-2">
+          <AreaTile to={`/runde/${gameId}/karte`} icon="🗺️" title="Karte" text={activeMap ? `Gerade: ${activeMap.name}` : 'Noch keine Karte gezeigt'} highlight={!!activeMap} />
+          <AreaTile to={`/runde/${gameId}/bibliothek`} icon="🎒" title="Inventar & Bibliothek" text="Gegenstände, Handouts & Effekte" />
+        </section>
       )}
 
-      {/* Teilnehmer */}
-      <section className="card">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="title text-2xl">Die Gefährten</h2>
-          <span className="rounded-full bg-stone-800 px-3 py-1 text-sm text-stone-300">{players.length} Spieler</span>
-        </div>
-
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {[gm, ...players].filter(Boolean).map((m) => {
-            const name = m.profiles?.username ?? 'Unbekannt'
-            const memberIsGM = m.role === 'gm'
-            const card = cardOf(m.user_id)
-            const content = (
-              <>
-                <Avatar name={card?.name ?? name} src={card?.avatar_url} variant={memberIsGM ? 'gm' : 'player'} />
-                <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-2 font-medium text-stone-100">
-                    <span className="truncate">{card ? card.name : name}</span>
-                    {m.user_id === profile.id && <span className="text-xs text-stone-500">(du)</span>}
-                    {card && <ConditionIcons conditions={card.conditions} />}
-                  </p>
-                  <p className={`truncate text-xs ${memberIsGM ? 'text-amber-400' : 'text-violet-300'}`}>
-                    {memberIsGM
-                      ? '📜 Spielleiter'
-                      : card
-                        ? `${shortRaceName(byKey(RACES, card.race)?.name)} · ${byKey(CLASSES, card.class)?.name ?? ''} · Stufe ${card.level}`
-                        : '🗡️ Spieler · noch kein Charakter'}
-                  </p>
-                  {card && <p className="truncate text-xs text-stone-500">gespielt von {name}</p>}
-                </div>
-              </>
-            )
-            const cardClass = `flex w-full items-center gap-3 rounded-xl border p-3 text-left ${
-              memberIsGM ? 'border-amber-700/60 bg-amber-950/20' : 'border-stone-800 bg-stone-950/40'
-            }`
-            return (
-              <li key={m.user_id}>
-                {card ? (
-                  <button type="button" onClick={() => setSelectedId(card.character_id)} className={`${cardClass} transition hover:border-amber-600`}>
-                    {content}
-                  </button>
-                ) : (
-                  <div className={cardClass}>{content}</div>
-                )}
-                {isGM && !memberIsGM && (
-                  <button
-                    onClick={() => removeMember(m.user_id, name)}
-                    className="mt-1 w-full rounded-md px-2 py-1 text-right text-xs text-stone-500 hover:bg-red-950/60 hover:text-red-300"
-                  >
-                    {name} entfernen
-                  </button>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-
-        {players.length === 0 && (
-          <p className="mt-4 text-center text-sm text-stone-500">
-            Noch keine Spieler da. Teile den Einladungscode mit deiner Gruppe!
-          </p>
-        )}
-      </section>
-
-      {/* Bereiche der Runde */}
-      <section className="grid gap-4 sm:grid-cols-2">
-        <Link to={`/runde/${gameId}/bibliothek`} className="card flex items-center gap-4 transition hover:border-amber-600">
-          <span className="text-4xl" aria-hidden>📚</span>
-          <div className="min-w-0">
-            <p className="title text-xl">Bibliothek</p>
-            <p className="text-sm text-stone-400">
-              {isGM ? 'Gegenstände, Karten, Handouts & Effekte verwalten' : 'Inventar, Karten, Handouts & Effekte'}
-            </p>
-            {isGM && openFinds > 0 && (
-              <p className="mt-1 inline-block rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-stone-950">
-                🔍 {openFinds} {openFinds === 1 ? 'offener Fund' : 'offene Funde'} prüfen
-              </p>
-            )}
+      {/* ---------- Einladung + Verlassen ---------- */}
+      <section className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-dashed border-stone-700 p-4 sm:flex-row">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl" aria-hidden>🔑</span>
+          <div>
+            <p className="text-xs uppercase tracking-widest text-stone-500">Einladungscode</p>
+            <p className="font-display text-2xl font-bold tracking-[0.25em] text-amber-300">{game.invite_code}</p>
           </div>
-        </Link>
-        <div className="rounded-2xl border border-dashed border-stone-700 p-6 opacity-70">
-          <div className="flex items-center gap-4">
-            <span className="text-4xl" aria-hidden>⚔️</span>
-            <div>
-              <p className="font-display text-xl font-bold text-stone-300">Kampffeld</p>
-              <p className="text-sm text-stone-500">Bald verfügbar: Raster, Figuren & Initiative</p>
-            </div>
-          </div>
+          <button onClick={copyCode} className="btn-ghost ml-1 px-3 py-1.5">{copied ? '✓ Kopiert' : 'Kopieren'}</button>
         </div>
-      </section>
-
-      <div className="flex justify-end">
         {isGM ? (
-          <button onClick={deleteGame} className="btn-danger">Runde löschen</button>
+          <button onClick={deleteGame} className="text-sm text-stone-500 hover:text-red-300">🗑️ Runde löschen</button>
         ) : (
-          <button onClick={leaveGame} className="btn-danger">Runde verlassen</button>
+          <button onClick={leaveGame} className="text-sm text-stone-500 hover:text-red-300">🚪 Runde verlassen</button>
         )}
-      </div>
+      </section>
 
       {/* Charakterkarte als Pop-up */}
       {selectedCard && (
@@ -345,5 +298,106 @@ function Lobby({ gameId }) {
         </Modal>
       )}
     </div>
+  )
+}
+
+// Großer Kasten „Dein Held“ ganz oben
+function HeroCard({ card, subtitle, gameId, onDetails }) {
+  const status = hpStatus(card.hp_percent)
+  return (
+    <section className="relative overflow-hidden rounded-2xl border-2 border-violet-700/50 bg-gradient-to-br from-violet-950/60 via-stone-900/80 to-stone-950 p-5 shadow-2xl shadow-violet-950/40 sm:p-6">
+      <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_30%,rgb(139_92_246/0.25),transparent_55%)]" aria-hidden />
+      <div className="relative flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
+        <button type="button" onClick={onDetails} className="relative shrink-0 rounded-full transition hover:scale-[1.03]" title="Details & Zustände">
+          <Avatar name={card.name} src={card.avatar_url} size="xl" />
+          <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-amber-600 bg-stone-950 px-3 py-0.5 font-display text-xs font-bold text-amber-300 shadow-lg">
+            Stufe {card.level}
+          </span>
+        </button>
+        <div className="w-full min-w-0 flex-1 space-y-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-violet-300/80">Dein Held</p>
+            <h2 className="title break-words text-3xl sm:text-4xl">{card.name}</h2>
+            <p className="text-stone-300">{subtitle}</p>
+          </div>
+          <div className="mx-auto max-w-sm sm:mx-0">
+            <div className="mb-1 flex items-center justify-between text-xs">
+              <span className={status.text}>❤️ {status.label}</span>
+              {card.conditions?.length > 0 && <ConditionIcons conditions={card.conditions} max={5} />}
+            </div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-stone-800">
+              <div className={`h-full ${status.bar} transition-all`} style={{ width: `${card.hp_percent ?? 100}%` }} />
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+            <Link to={`/runde/${gameId}/charakter/${card.character_id}`} className="btn-primary">📜 Charakterbogen</Link>
+            <Link to={`/runde/${gameId}/bibliothek`} className="btn-ghost">🎒 Inventar</Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// Kachel eines Gefährten in der Gruppe
+function PartyTile({ card, playerName, subtitle, onClick }) {
+  if (!card) {
+    return (
+      <div className="flex h-full flex-col items-center gap-2 rounded-2xl border border-dashed border-stone-700 p-4 text-center opacity-70">
+        <Avatar name={playerName} size="lg" />
+        <p className="w-full truncate font-medium text-stone-300">{playerName}</p>
+        <p className="text-xs text-stone-500">⏳ erschafft noch einen Helden</p>
+      </div>
+    )
+  }
+  const status = hpStatus(card.hp_percent)
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex h-full w-full flex-col items-center gap-2 rounded-2xl border border-stone-800 bg-stone-900/70 p-4 text-center shadow-lg shadow-black/40 transition hover:-translate-y-0.5 hover:border-amber-600"
+    >
+      <div className="relative">
+        <Avatar name={card.name} src={card.avatar_url} size="lg" />
+        {card.hp_percent === 0 && <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60 text-2xl">💀</span>}
+        <span className="absolute -bottom-1 -right-2 rounded-full border border-stone-700 bg-stone-950 px-1.5 text-xs font-bold text-amber-300">{card.level}</span>
+      </div>
+      <div className="w-full min-w-0">
+        <p className="truncate font-display font-bold text-stone-100 group-hover:text-amber-200">{card.name}</p>
+        <p className="truncate text-xs text-violet-300">{subtitle}</p>
+      </div>
+      <div className="mt-auto w-full space-y-1">
+        <div className="h-1.5 overflow-hidden rounded-full bg-stone-800" title={status.label}>
+          <div className={`h-full ${status.bar}`} style={{ width: `${card.hp_percent ?? 100}%` }} />
+        </div>
+        <div className="flex h-5 items-center justify-between gap-1 text-xs">
+          <span className="truncate text-stone-500">{playerName}</span>
+          <ConditionIcons conditions={card.conditions} />
+        </div>
+      </div>
+    </button>
+  )
+}
+
+// Kachel für einen Bereich der Runde (Karte, Bibliothek …)
+function AreaTile({ to, icon, title, text, badge, highlight }) {
+  return (
+    <Link
+      to={to}
+      className={`group flex min-w-0 items-center gap-4 rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:border-amber-600 ${
+        highlight ? 'border-emerald-700/60 bg-emerald-950/20' : 'border-stone-800 bg-stone-900/70'
+      }`}
+    >
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-stone-950/60 text-3xl" aria-hidden>{icon}</span>
+      <div className="min-w-0 flex-1">
+        <p className="font-display text-lg font-bold text-stone-100 group-hover:text-amber-200">{title}</p>
+        <p className={`truncate text-sm ${highlight ? 'text-emerald-300' : 'text-stone-400'}`}>
+          {highlight && '👁️ '}
+          {text}
+        </p>
+        {badge && <p className="mt-1 inline-block rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-stone-950">{badge}</p>}
+      </div>
+      <span className="text-stone-600 group-hover:text-amber-400" aria-hidden>→</span>
+    </Link>
   )
 }
