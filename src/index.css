@@ -136,7 +136,7 @@ body {
 /* ---------- Untere Navigation am Handy: schwebende Elemente darüber setzen ---------- */
 @media (max-width: 639px) {
   body[data-bottom-nav] .above-bottom-nav {
-    bottom: calc(4.75rem + env(safe-area-inset-bottom));
+    bottom: calc(6rem + env(safe-area-inset-bottom));
   }
 }
 
