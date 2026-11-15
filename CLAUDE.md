@@ -14,7 +14,7 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 ## Struktur
 - `src/lib/` – Supabase-Client, Auth-Kontext (`useAuth()` → `session`, `profile`, `signOut`, `updateUsername`), Fehlerübersetzung
 - `src/pages/` – eine Datei pro Seite; `src/components/` – wiederverwendbare Bausteine (`character/` für den Erschaffungs-Assistenten, `party/` für die Gruppenansicht, `library/` für die Bibliothek,
-  `Modal.jsx` für Pop-ups (per Portal in `<body>`), `NameDialog.jsx` = kleines Namens-Pop-up, `GameNav.jsx` als Navigation auf allen Seiten einer Runde,
+  `Modal.jsx` für Pop-ups (per Portal in `<body>`), `AreaTile.jsx` = Kachel zu einem Bereich (Lobby + Startseite), `NameDialog.jsx` = kleines Namens-Pop-up, `GameNav.jsx` als Navigation auf allen Seiten einer Runde,
   `GiftNotifier.jsx` = globale Einblendung bei neuen Zuteilungen)
 - `src/data/srd.js` – Regeldaten (Völker, Klassen, Fertigkeiten, Rüstungen …); `src/lib/character.js` – alle Berechnungen
   (`deriveCharacter(row)`). Abgeleitete Werte (TP-Maximum, RK, Boni) werden **nie** gespeichert, sondern immer berechnet.
