@@ -30,6 +30,10 @@ const R = [
     '- Sag „Ich schaue unter das Bett“ statt „Ich würfle Wahrnehmung“ – der SL sagt dir, ob gewürfelt wird.\n- Gib deinem Charakter ein Ziel, eine Angst und eine Eigenart.\n- Hör den anderen zu und spiel ihnen Bälle zu.\n- Scheitern ist nicht schlimm – oft wird es dadurch erst spannend.\n- Unsicher bei einer Regel? Erst spielen, danach im Kompendium nachschlagen.',
     '', ['einstieg:spielabend']],
 
+  ['karte', 'einstieg', 'Die Karte (für Spieler)', 'karte, nebel, map, aufgedeckt, wo sind wir',
+    'Unter „🗺️ Karte“ siehst du die Karte, die der Spielleiter gerade zeigt – nur die Teile, die er aufgedeckt hat.',
+    '- Der Rest liegt im Nebel. Betretet ihr einen neuen Raum, deckt der Spielleiter ihn auf und der Nebel verschwindet von selbst.\n- Zoomen: zwei Finger auseinanderziehen (am PC: Mausrad). Verschieben: mit dem Finger ziehen.\n- Zeigt der Spielleiter gerade keine Karte, steht dort ein Hinweis – die Karte erscheint automatisch, sobald es losgeht.\n- Oft läuft die Karte zusätzlich groß auf einem Bildschirm am Tisch.', '', ['spielleiter:nebelkarte']],
+
   // ------------------------------- Grundregeln -------------------------------
   ['attribute', 'grundregeln', 'Attribute und Modifikatoren', 'ability scores, modifier, mod, stärke, geschicklichkeit, konstitution, intelligenz, weisheit, charisma',
     'Sechs Attribute beschreiben deinen Charakter; ihr Modifikator wird zu Würfen addiert.',
@@ -337,6 +341,16 @@ const R = [
     'Die Gesinnung ist eine Orientierung für das Rollenspiel, keine Fessel. Charaktere dürfen sich entwickeln.', '', []],
 
   // ------------------------------- Spielleiter -------------------------------
+  ['nebelkarte', 'spielleiter', 'So funktioniert die Nebelkarte', 'karte, nebel, fog of war, nebel des krieges, aufdecken, räume, tisch-bildschirm, fernseher, battle map, anleitung',
+    'Karte hochladen, Räume vorbereiten, den Spielern zeigen, im Spiel aufdecken – auf Wunsch auch auf einem großen Bildschirm am Tisch.',
+    '1️⃣ Karte anlegen\n- In der Runde auf „🗺️ Karte“ → „＋ Neue Karte“.\n- Ein Bild hochladen oder eine Karte aus der Bibliothek wählen.\n- Die Karte ist zuerst komplett im Nebel. Du siehst trotzdem alles – der Nebel ist für dich nur abgedunkelt.\n\n' +
+      '2️⃣ Räume vorbereiten (empfohlen)\n- Reiter „🏠 Räume vorbereiten“ → mit ▭ Rechteck einen Raum aufziehen oder mit ⬠ Vieleck die Ecken antippen (zum Schließen die erste Ecke antippen oder „Fertig“).\n- Dem Raum einen Namen geben, z. B. „Wachraum“.\n- Tipp: Das geht auch schon in der Werkstatt (Karte öffnen → „Räume einzeichnen“). Die Räume kommen mit, wenn du das Abenteuer in die Runde lädst.\n\n' +
+      '3️⃣ Den Spielern zeigen\n- Auf „👁️ Den Spielern zeigen“ tippen. Erst jetzt sehen die Spieler die Karte – und nur das, was aufgedeckt ist.\n- Es wird immer nur eine Karte gleichzeitig gezeigt. Mit „🙈 Nicht mehr zeigen“ verschwindet sie wieder.\n\n' +
+      '4️⃣ Im Spiel aufdecken\n- Vorbereitete Räume: unten in der Raumliste auf „Aufdecken“ tippen – fertig.\n- Spontan: ☀️ Aufdecken wählen und mit ▭ Rechteck, ⬠ Vieleck oder 🖌️ Pinsel (Größe S/M/L) über die Karte malen.\n- Zu viel aufgedeckt? „🌫️ Verdecken“ wählen und drübermalen – oder „↶ Rückgängig“.\n- Mit dem Häkchen „👁️ So sehen es die Spieler“ prüfst du die Spielersicht.\n- Bei den Spielern löst sich der Nebel sofort und sanft auf.\n\n' +
+      '5️⃣ Tisch-Bildschirm (Fernseher, Laptop, Tablet)\n- Auf „📺 Tisch-Bildschirm“ tippen – dort stehen Code und Link.\n- Den Link am großen Gerät im Browser öffnen (keine Anmeldung nötig) und „⛶ Vollbild“ tippen.\n- Der Bildschirm zeigt immer die gezeigte Karte mit Nebel – wie die Spieler.\n- Blick lenken: Deine eigene Ansicht auf den gewünschten Ausschnitt zoomen und „Hierhin schauen“ tippen. „Ganze Karte“ zeigt wieder alles.\n\n' +
+      'Bedienung\n- Verschieben: mit einem Finger (Werkzeug ✋ Bewegen) – mit zwei Fingern geht es bei jedem Werkzeug.\n- Zoomen: zwei Finger auseinanderziehen, Mausrad oder die Knöpfe ＋ / － / ⤢ unten rechts.',
+    'Vorbereitung: Mine hochladen, „Eingang“, „Wachraum“ und „Schatzkammer“ einzeichnen. Im Spiel: Karte zeigen, „Eingang“ aufdecken. Die Gruppe schleicht weiter → „Wachraum“ aufdecken.',
+    ['einstieg:karte']],
   ['sg-tabelle', 'spielleiter', 'Schwierigkeitsgrade festlegen', 'dc, schwierigkeit festlegen, sg wählen',
     'Faustregel: 10 leicht, 15 mittel, 20 schwer. Nur würfeln lassen, wenn Scheitern interessant ist.',
     '- Ist etwas trivial: kein Wurf, es klappt.\n- Ist es unmöglich: kein Wurf, es klappt nicht.\n- Gute Ideen der Spieler: Vorteil oder niedrigerer SG.\n- Scheitern soll die Geschichte weiterbringen („Es klappt, aber …“).', '', ['grundregeln:sg']],

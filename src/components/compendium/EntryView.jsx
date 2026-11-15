@@ -37,7 +37,12 @@ export function RichText({ text }) {
         return (
           <div key={i} className="space-y-1">
             {lines.map((l, k) =>
-              l.startsWith('- ') ? <p key={k} className="pl-4">• {l.slice(2)}</p> : <p key={k}>{l}</p>
+              l.startsWith('- ') ? (
+                <p key={k} className="pl-4">• {l.slice(2)}</p>
+              ) : (
+                // Überschrift über einer Aufzählung (z. B. „1️⃣ Karte anlegen“) hervorheben
+                <p key={k} className={k === 0 && lines.length > 1 && lines.slice(1).every((x) => x.startsWith('- ')) ? 'font-semibold text-stone-100' : undefined}>{l}</p>
+              )
             )}
           </div>
         )

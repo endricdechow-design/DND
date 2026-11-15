@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
 import { deleteMap } from '../lib/maps'
+import { useCompendium } from '../lib/compendium'
 import GameNav from '../components/GameNav'
 import GameMasterBanner from '../components/GameMasterBanner'
 import Modal from '../components/Modal'
@@ -11,6 +12,8 @@ import MapCanvas from '../components/map/MapCanvas'
 import MapEditor from '../components/map/MapEditor'
 import NewMapDialog from '../components/map/NewMapDialog'
 import DisplayDialog from '../components/map/DisplayDialog'
+
+const GM_GUIDE = 'spielleiter:nebelkarte'
 
 export default function MapPage() {
   const { gameId } = useParams()
@@ -28,6 +31,7 @@ function Maps({ gameId }) {
   const [error, setError] = useState('')
   const channelRef = useRef(null)
   const roleRef = useRef(null)
+  const { open: openCompendium } = useCompendium()
 
   const isGM = role === 'gm'
 
@@ -69,6 +73,18 @@ function Maps({ gameId }) {
     }
   }, [gameId, load])
 
+  // Spielleiter: Anleitung beim allerersten Besuch automatisch zeigen
+  useEffect(() => {
+    if (role !== 'gm') return
+    try {
+      if (localStorage.getItem('dnd:map-guide-seen')) return
+      localStorage.setItem('dnd:map-guide-seen', '1')
+    } catch {
+      return // Speicher nicht verfügbar → lieber nicht jedes Mal öffnen
+    }
+    openCompendium(GM_GUIDE)
+  }, [role, openCompendium])
+
   const notifyChanged = () => channelRef.current?.send({ type: 'broadcast', event: 'changed', payload: {} })
 
   if (!maps || !role) return <p className="title animate-pulse text-center text-xl">Entrolle die Karte …</p>
@@ -79,7 +95,10 @@ function Maps({ gameId }) {
     return (
       <div className="space-y-6">
         <GameNav gameId={gameId} />
-        <h1 className="title text-3xl">🗺️ {map ? map.name : 'Karte'}</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="title text-3xl">🗺️ {map ? map.name : 'Karte'}</h1>
+          <button type="button" className="btn-ghost px-3 py-2 text-sm" onClick={() => openCompendium('einstieg:karte')}>❓ Hilfe</button>
+        </div>
         {error && <p className="alert-error">{error}</p>}
         {map ? (
           <MapCanvas key={map.id} imageUrl={map.image_url} ops={map.fog} fogStyle="opaque" className="h-[70vh] min-h-80 rounded-2xl border border-stone-800" />
@@ -135,6 +154,7 @@ function Maps({ gameId }) {
           <p className="text-stone-400">Karten mit Nebel – du deckst auf, was die Gruppe sieht.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button type="button" className="btn-ghost" onClick={() => openCompendium(GM_GUIDE)}>❓ So funktioniert's</button>
           <button type="button" className="btn-secondary" onClick={() => setShowDisplay(true)}>📺 Tisch-Bildschirm</button>
           <button type="button" className="btn-primary" onClick={() => setCreating(true)}>＋ Neue Karte</button>
         </div>
