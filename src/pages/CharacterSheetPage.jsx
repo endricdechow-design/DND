@@ -13,6 +13,7 @@ import GameMasterBanner from '../components/GameMasterBanner'
 import PartyCardDetails from '../components/party/PartyCardDetails'
 import { ConditionPicker } from '../components/party/Conditions'
 import OwnedFromLibrary from '../components/library/OwnedFromLibrary'
+import SpellsSection from '../components/spells/SpellsSection'
 
 export default function CharacterSheetPage() {
   const { gameId, characterId } = useParams()
@@ -188,6 +189,8 @@ function Sheet({ gameId, characterId }) {
         <ConditionPicker conditions={character.conditions ?? []} onChange={(conditions) => saveFields({ conditions })} />
       </section>
 
+      <SpellsSection character={character} derived={c} canEdit={canEdit} onSave={saveFields} />
+
       {/* Attribute */}
       <section className="grid grid-cols-3 gap-3 sm:grid-cols-6">
         {Object.entries(c.abilities).map(([key, score]) => (
@@ -221,15 +224,6 @@ function Sheet({ gameId, characterId }) {
 
         {/* Eigenschaften */}
         <section className="card space-y-5">
-          {c.spellcasting && (
-            <InfoBlock title="Zauberwirken">
-              <p className="text-sm text-stone-300">
-                Attribut: <b>{abilityShort(c.spellcasting.ability)}</b> · Rettungswurf-SG <b>{c.spellcasting.dc}</b> · Zauberangriff{' '}
-                <b>{formatMod(c.spellcasting.attack)}</b>
-              </p>
-              <p className="mt-1 text-xs text-stone-500">Zauberlisten folgen in einem späteren Schritt.</p>
-            </InfoBlock>
-          )}
           {c.breathWeapon && (
             <InfoBlock title={`Odemwaffe (${c.breathWeapon.name})`}>
               <p className="text-sm text-stone-300">
@@ -347,7 +341,17 @@ function HitPoints({ character, hpMax, canEdit, onSave }) {
           <button className="btn-danger" disabled={!value} onClick={damage}>🗡️ Schaden</button>
           <button className="btn-ghost" disabled={!value} onClick={heal}>💚 Heilen</button>
           <button className="btn-ghost" onClick={setTemp} title="Temporäre TP auf diesen Wert setzen">🛡️ Temp. TP</button>
-          <button className="btn-ghost sm:ml-auto" onClick={() => onSave({ hp_current: hpMax, hp_temp: 0 })}>
+          <button
+            className="btn-ghost sm:ml-auto"
+            onClick={() =>
+              onSave({
+                hp_current: hpMax,
+                hp_temp: 0,
+                // Lange Rast: auch alle Zauberplätze zurück
+                data: { ...character.data, spells: { ...(character.data?.spells ?? {}), slotsUsed: {} } },
+              })
+            }
+          >
             🌙 Lange Rast
           </button>
         </div>

@@ -20,6 +20,9 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   (`deriveCharacter(row)`). Abgeleitete Werte (TP-Maximum, RK, Boni) werden **nie** gespeichert, sondern immer berechnet.
 - `src/data/catalog.js` – Vorschlagskatalog für die Bibliothek (`searchCatalog(type, text)`); Einträge mit `stat`
   (Kurzinfo, landet in `library_items.data.stat` und auf der Kachel)
+- `src/data/spells.js` – Zauber (Grad 0–3) + `spellRules(class, level, mods)` (Plätze, Zähler, Modus known/prepared/spellbook).
+  Auswahl/Plätze gespeichert in `characters.data.spells` `{ cantrips, known, prepared, slotsUsed }`; Zähler sind nur Hinweise.
+  Komponenten in `src/components/spells/`. Grade 4–9 fehlen noch.
 - `src/data/levels.js` – Klassenfähigkeiten Stufe 2–20 und Stufen mit Attributserhöhung
 - `src/lib/avatars.js` – Bild verkleinern + in Storage-Bucket `avatars` hochladen (Pfad beginnt mit der User-ID)
 - `wrangler.jsonc` – Veröffentlichung über **Cloudflare** (Workers Builds: `npm run build` → `npx wrangler deploy`, Ordner `dist`).

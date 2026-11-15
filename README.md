@@ -16,6 +16,9 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
   - **Stufenaufstieg-Assistent:** gewürfelte oder durchschnittliche TP, Attributserhöhungen,
     Übersicht der neuen Klassenfähigkeiten (Stufe 2–20), Stufenverlauf mit „rückgängig“
   - Der Spielleiter kann alle Charaktere seiner Runde bearbeiten; Änderungen erscheinen live
+- **Zauber:** 164 SRD-Zauber (Zaubertricks bis Grad 3) mit deutscher Kurzbeschreibung
+  - Zauberplätze zum Abhaken (Paktmagie beim Hexenmeister), „✨ Wirken“ mit Wahl des Platzes, Lange/Kurze Rast
+  - Zaubertricks, bekannte bzw. vorbereitete Zauber, Zauberbuch für Magier – Zähler als Hinweis
 - **Gruppenansicht:** Avatar-Leiste mit Lebensbalken und Zuständen; Klick öffnet die Charakterkarte
   - Mitspieler sehen nur Name, Bild, Volk, Klasse, Stufe, Gesundheit, Zustände und öffentliche Notizen
   - Den vollen Bogen und die privaten Notizen sehen nur der Spieler selbst und der Spielleiter
