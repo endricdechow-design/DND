@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { translateError } from '../../lib/errors'
 import { removeImage, uploadImage } from '../../lib/images'
-import { LIBRARY_TYPES, RARITIES, imageSizeFor, libraryType, rarity } from '../../data/library'
-import { searchCatalog } from '../../data/catalog'
+import { LIBRARY_TYPES, RARITIES, imageSizeFor, libraryType } from '../../data/library'
+import CatalogNameInput from './CatalogNameInput'
+import { parseKg } from '../../lib/inventory'
 
 /**
  * Eintrag anlegen oder bearbeiten (nur Spielleiter).
@@ -21,8 +22,7 @@ export default function LibraryEditor({ gameId, item, assignedUserIds = [], play
   const [rarityKey, setRarityKey] = useState(item?.data?.rarity ?? 'common')
   const [duration, setDuration] = useState(item?.data?.duration ?? '')
   const [stat, setStat] = useState(item?.data?.stat ?? '')
-  const [suggestOpen, setSuggestOpen] = useState(false)
-  const [highlight, setHighlight] = useState(0)
+  const [weight, setWeight] = useState(item?.data?.weight != null ? String(item.data.weight).replace('.', ',') : '')
   const [visibility, setVisibility] = useState(item?.visibility ?? 'hidden')
   const [assigned, setAssigned] = useState(assignedUserIds)
   const [imageUrl, setImageUrl] = useState(item?.image_url ?? null)
@@ -37,16 +37,13 @@ export default function LibraryEditor({ gameId, item, assignedUserIds = [], play
   const toggleAssigned = (userId) =>
     setAssigned((list) => (list.includes(userId) ? list.filter((id) => id !== userId) : [...list, userId]))
 
-  // Vorschläge aus dem Regelwerk (nur für Gegenstände und Effekte)
-  const suggestions = searchCatalog(type, name).filter((e) => e.name.toLowerCase() !== name.trim().toLowerCase())
-
   function applySuggestion(entry) {
     setName(entry.name)
     setDescription(entry.description)
     setStat(entry.stat ?? '')
     if (entry.rarity) setRarityKey(entry.rarity)
     if (entry.duration) setDuration(entry.duration)
-    setSuggestOpen(false)
+    setWeight(entry.weight ? String(entry.weight).replace('.', ',') : '')
   }
 
   async function save() {
@@ -76,6 +73,7 @@ export default function LibraryEditor({ gameId, item, assignedUserIds = [], play
           ...(type === 'item' ? { rarity: rarityKey } : {}),
           ...(type === 'effect' ? { duration: duration.trim() } : {}),
           stat: stat.trim(),
+          ...(type === 'item' && parseKg(weight) !== null ? { weight: parseKg(weight) } : { weight: undefined }),
         },
       }
 
@@ -147,67 +145,14 @@ export default function LibraryEditor({ gameId, item, assignedUserIds = [], play
 
       <div>
         <label className="label" htmlFor="libName">Name</label>
-        <div className="relative">
-          <input
-            id="libName"
-            className="input"
-            value={name}
-            maxLength={80}
-            autoComplete="off"
-            onChange={(e) => {
-              setName(e.target.value)
-              setSuggestOpen(true)
-              setHighlight(0)
-            }}
-            onFocus={() => setSuggestOpen(true)}
-            onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
-            onKeyDown={(e) => {
-              if (!suggestOpen || !suggestions.length) return
-              if (e.key === 'ArrowDown') {
-                e.preventDefault()
-                setHighlight((h) => (h + 1) % suggestions.length)
-              } else if (e.key === 'ArrowUp') {
-                e.preventDefault()
-                setHighlight((h) => (h - 1 + suggestions.length) % suggestions.length)
-              } else if (e.key === 'Enter') {
-                e.preventDefault()
-                applySuggestion(suggestions[highlight])
-              } else if (e.key === 'Escape') {
-                e.stopPropagation()
-                setSuggestOpen(false)
-              }
-            }}
-            placeholder={type === 'map' ? 'z. B. Karte der Phandelver-Mine' : type === 'effect' ? 'z. B. Segen' : 'z. B. Langschwert, Heiltrank …'}
-          />
-          {suggestOpen && suggestions.length > 0 && (
-            <ul className="absolute inset-x-0 top-full z-10 mt-1 max-h-72 overflow-y-auto rounded-xl border border-amber-800/60 bg-stone-950 shadow-2xl shadow-black">
-              <li className="px-3 py-1.5 text-xs text-stone-500">📖 Vorschläge aus dem Regelwerk – antippen zum Übernehmen</li>
-              {suggestions.map((entry, index) => {
-                const r = rarity(entry.rarity)
-                return (
-                  <li key={entry.name}>
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => applySuggestion(entry)}
-                      onMouseEnter={() => setHighlight(index)}
-                      className={`flex w-full items-center justify-between gap-3 px-3 py-2 text-left ${index === highlight ? 'bg-amber-500/15' : ''}`}
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-stone-100">{entry.name}</span>
-                        <span className="text-xs text-stone-500">
-                          {entry.category}
-                          {r && entry.rarity !== 'common' && <span className={`ml-1 ${r.color}`}>· {r.name}</span>}
-                        </span>
-                      </span>
-                      {entry.stat && <span className="shrink-0 rounded bg-stone-800 px-2 py-0.5 text-xs text-amber-200">{entry.stat}</span>}
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </div>
+        <CatalogNameInput
+          id="libName"
+          type={type}
+          value={name}
+          onChange={setName}
+          onPick={applySuggestion}
+          placeholder={type === 'map' ? 'z. B. Karte der Phandelver-Mine' : type === 'effect' ? 'z. B. Segen' : 'z. B. Langschwert, Heiltrank …'}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -232,6 +177,13 @@ export default function LibraryEditor({ gameId, item, assignedUserIds = [], play
             <label className="label" htmlFor="libStat">Kurzinfo auf der Kachel (optional)</label>
             <input id="libStat" className="input" value={stat} maxLength={24} onChange={(e) => setStat(e.target.value)}
               placeholder={type === 'item' ? 'z. B. 1W8 Hieb, RK 16' : 'z. B. +1W4'} />
+          </div>
+        )}
+        {type === 'item' && (
+          <div>
+            <label className="label" htmlFor="libWeight">Gewicht pro Stück in kg (optional)</label>
+            <input id="libWeight" className="input" inputMode="decimal" value={weight} maxLength={8}
+              onChange={(e) => setWeight(e.target.value.replace(/[^0-9.,]/g, ''))} placeholder="z. B. 1,5" />
           </div>
         )}
         {type === 'effect' && (

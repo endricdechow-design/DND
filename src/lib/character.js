@@ -6,6 +6,7 @@
 import {
   ABILITIES, ARMORS, BACKGROUNDS, CLASSES, DRAGON_ANCESTRIES, POINT_BUY_BUDGET, POINT_BUY_COST, RACES, SKILLS, STANDARD_ARRAY, byKey,
 } from '../data/srd'
+import { carryCapacity } from './inventory'
 
 /** Attributsmodifikator: 10–11 → +0, 12–13 → +1, 8–9 → −1 … */
 export const abilityMod = (score) => Math.floor((score - 10) / 2)
@@ -151,6 +152,7 @@ export function deriveCharacter(character) {
     passivePerception: 10 + (perception?.bonus ?? 0),
     hpMax: maxHitPoints({ classKey: character.class, raceKey: character.race, level, conScore: abilities.con, levelUps }),
     levelUps,
+    carryCapacity: carryCapacity(abilities.str),
     sneakAttack: character.class === 'rogue' ? `${Math.ceil(level / 2)}W6` : null,
     ac: armorClass({ classKey: character.class, armorKey: data.armor, shield: data.shield, abilities }),
     armor: byKey(ARMORS, data.armor) ?? ARMORS[0],

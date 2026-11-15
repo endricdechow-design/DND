@@ -28,6 +28,9 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
   - „🎁 Geben“ direkt an der Kachel oder auf dem Charakterbogen – mit Sicherheitsfrage
   - Spieler bekommen eine animierte Einblendung, wenn sie etwas erhalten
   - Spieler können Gegenstände **benutzen** (verbrauchen) – der Spielleiter bekommt eine Meldung
+- **Inventar:** Anzahl (z. B. 3 Heiltränke), Gewicht in kg, Traglast = Stärke × 7,5 kg
+  - Spieler melden **Fundstücke** selbst („🔍 Etwas gefunden“), der Spielleiter prüft, passt an und bestätigt
+  - Wer überladen ist, kann nichts mehr aufsammeln (der Spielleiter kann trotzdem etwas geben)
 - **Schnellnavigation** in jeder Runde: Lobby · Mein Charakter · Bibliothek
 
 ## Geplant (in dieser Reihenfolge)

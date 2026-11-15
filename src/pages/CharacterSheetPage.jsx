@@ -72,12 +72,17 @@ function Sheet({ gameId, characterId }) {
 
   // Maximale TP für den Lebensbalken der Gruppe aktuell halten (wird nur hier berechnet)
   const canEditLoaded = character && (character.user_id === profile.id || isGM)
-  const computedMax = character ? deriveCharacter(character).hpMax : null
+  const derivedNow = character ? deriveCharacter(character) : null
+  const computedMax = derivedNow?.hpMax ?? null
+  const computedCapacity = derivedNow?.carryCapacity ?? null
+  // Gecachte Werte (Lebensbalken der Gruppe, Traglast-Prüfung in der Datenbank) aktuell halten
   useEffect(() => {
-    if (canEditLoaded && computedMax && character.hp_max !== computedMax) {
-      supabase.from('characters').update({ hp_max: computedMax }).eq('id', characterId).then(() => {})
-    }
-  }, [canEditLoaded, computedMax, character?.hp_max, characterId])
+    if (!canEditLoaded || !computedMax) return
+    const patch = {}
+    if (character.hp_max !== computedMax) patch.hp_max = computedMax
+    if (Number(character.carry_capacity) !== computedCapacity) patch.carry_capacity = computedCapacity
+    if (Object.keys(patch).length) supabase.from('characters').update(patch).eq('id', characterId).then(() => {})
+  }, [canEditLoaded, computedMax, computedCapacity, character?.hp_max, character?.carry_capacity, characterId])
 
   if (partyCard) {
     return (
@@ -252,6 +257,8 @@ function Sheet({ gameId, characterId }) {
           label: `${character.name} (${character.profiles?.username ?? '?'})`,
         }}
         canGive={isGM}
+        capacity={c.carryCapacity}
+        gameIdForFound={character.user_id === profile.id ? gameId : null}
       />
 
       {c.level > 1 && (

@@ -43,6 +43,11 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - Tabelle `game_log` (Protokoll, z. B. `item_used`), lesbar für Spielleiter + eigene Einträge, geschrieben nur per RPC.
   RPC `use_library_item(item_id)`: Spieler verbraucht einen eigenen Gegenstand (Zuteilung weg + Protokolleintrag).
   `GameLogNotifier.jsx` zeigt dem Spielleiter neue Einträge an.
+- Inventar (Migration 006): `library_assignments.quantity`, Gewicht in `library_items.data.weight` (kg pro Stück),
+  `characters.carry_capacity` (Cache, App schreibt Stärke × 7,5 – siehe `src/lib/inventory.js`).
+  Tabelle `item_requests` (Fundstücke, status pending/approved/rejected). RPCs: `request_found_item` (prüft Überladung
+  serverseitig), `decide_item_request` (nur Spielleiter, legt Eintrag im Ordner „Fundstücke“ an), `give_library_item`
+  (erhöht Anzahl), `use_library_item` (zieht 1 ab). `game_log.target_user_id` = Meldung an genau diesen Spieler.
 - Benachrichtigungen (Geschenk, Protokoll) nutzen Realtime **und** regelmäßiges Nachschauen als Absicherung;
   Anzeige über `src/lib/useTimedQueue.js` (10 s, feste Ablaufzeit, Ablaufbalken). `GameLogNotifier` sendet
   zusätzlich das Fenster-Ereignis `dnd:game-log`, auf das z. B. die Bibliothek mit Neuladen reagiert.

@@ -6,7 +6,7 @@ import { libraryType, rarity } from '../../data/library'
  * assignedNames: Namen der zugeteilten Spieler (nur für den Spielleiter)
  * onToggleVisibility: schneller Freischalten/Verstecken-Knopf (nur für den Spielleiter)
  */
-export default function LibraryCard({ item, assignedNames, onOpen, onToggleVisibility, onGive }) {
+export default function LibraryCard({ item, assignedNames, quantity = 1, onOpen, onToggleVisibility, onGive }) {
   const type = libraryType(item.type)
   const r = item.type === 'item' ? rarity(item.data?.rarity) : null
   const isGMView = Boolean(onToggleVisibility)
@@ -24,7 +24,10 @@ export default function LibraryCard({ item, assignedNames, onOpen, onToggleVisib
         <div className="flex flex-1 flex-col gap-1 p-3">
           <p className="flex items-start justify-between gap-2">
             <span className="font-display font-bold leading-tight text-stone-100">{item.name}</span>
-            {item.data?.stat && <span className="shrink-0 rounded bg-stone-800 px-2 py-0.5 text-xs text-amber-200">{item.data.stat}</span>}
+            <span className="flex shrink-0 gap-1">
+              {quantity > 1 && <span className="rounded bg-amber-600 px-2 py-0.5 text-xs font-bold text-stone-950">×{quantity}</span>}
+              {item.data?.stat && <span className="rounded bg-stone-800 px-2 py-0.5 text-xs text-amber-200">{item.data.stat}</span>}
+            </span>
           </p>
           <p className="text-xs text-stone-500">
             {type.icon} {type.name}

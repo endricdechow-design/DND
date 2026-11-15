@@ -178,7 +178,42 @@ const EFFECTS = [
   ['Krankheit', 'bis geheilt', 'krank', 'Der Spielleiter bestimmt die Wirkung – z. B. Erschöpfung oder Nachteil.'],
 ].map(([name, duration, stat, description]) => ({ name, type: 'effect', category: '🌟 Effekt', duration, stat, description }))
 
-export const CATALOG = [...WEAPONS, ...ARMOR_ITEMS, ...GEAR, ...POTIONS, ...MAGIC_ITEMS, ...EFFECTS]
+// ---------------------------------------------------------------------
+// Gewichte in kg (SRD-Pfund ÷ 2, gerundet)
+// ---------------------------------------------------------------------
+const WEIGHTS = {
+  // Waffen
+  'Knüppel': 1, 'Dolch': 0.5, 'Zweihandknüppel': 5, 'Handaxt': 1, 'Wurfspeer': 1, 'Leichter Hammer': 1,
+  'Streitkolben': 2, 'Kampfstab': 2, 'Sichel': 1, 'Speer': 1.5, 'Leichte Armbrust': 2.5, 'Wurfpfeil': 0.1,
+  'Kurzbogen': 1, 'Schleuder': 0, 'Streitaxt': 2, 'Flegel': 1, 'Glefe': 3, 'Zweihandaxt': 3.5,
+  'Zweihandschwert': 3, 'Hellebarde': 3, 'Lanze': 3, 'Langschwert': 1.5, 'Zweihandhammer': 5, 'Morgenstern': 2,
+  'Pike': 9, 'Rapier': 1, 'Krummsäbel': 1.5, 'Kurzschwert': 1, 'Dreizack': 2, 'Kriegspicke': 1,
+  'Kriegshammer': 1, 'Peitsche': 1.5, 'Blasrohr': 0.5, 'Handarmbrust': 1.5, 'Schwere Armbrust': 9,
+  'Langbogen': 1, 'Netz': 1.5,
+  // Rüstungen
+  'Gepolsterte Rüstung': 4, 'Lederrüstung': 5, 'Beschlagenes Leder': 6.5, 'Fellrüstung': 6, 'Kettenhemd': 10,
+  'Schuppenpanzer': 22.5, 'Brustplatte': 10, 'Halbplatte': 20, 'Ringpanzer': 20, 'Kettenpanzer': 27.5,
+  'Schienenpanzer': 30, 'Plattenpanzer': 32.5, 'Schild': 3,
+  // Ausrüstung
+  'Seil (15 m)': 5, 'Fackel': 0.5, 'Kapuzenlaterne': 1, 'Öl (Flasche)': 0.5, 'Rationen (1 Tag)': 1,
+  'Wasserschlauch': 2.5, 'Rucksack': 2.5, 'Schlafsack': 3.5, 'Zunderkästchen': 0.5, 'Brechstange': 2.5,
+  'Enterhaken': 2, 'Heilerausrüstung': 1.5, 'Weihwasser (Phiole)': 0.5, 'Säure (Phiole)': 0.5,
+  'Alchemistenfeuer': 0.5, 'Gegengift (Phiole)': 0, 'Krähenfüße (Beutel)': 1, 'Kugellager (Beutel)': 1,
+  'Jagdfalle': 12.5, 'Diebeswerkzeug': 0.5, 'Spiegel (Stahl)': 0.25, 'Fernrohr': 0.5, 'Kletterhaken (10)': 1.25,
+  'Pfeile (20)': 0.5, 'Armbrustbolzen (20)': 0.75, 'Goldmünzen': 0,
+  // Tränke und Magisches
+  'Heiltrank': 0.25, 'Großer Heiltrank': 0.25, 'Überlegener Heiltrank': 0.25, 'Höchster Heiltrank': 0.25,
+  'Trank der Hügelriesenstärke': 0.25, 'Trank des Wasseratmens': 0.25, 'Trank des Widerstands': 0.25,
+  'Trank des Kletterns': 0.25, 'Trank der Unsichtbarkeit': 0.25, 'Trank des Fliegens': 0.25, 'Trank der Eile': 0.25,
+  'Umhang des Schutzes': 0.5, 'Ring des Schutzes': 0, 'Stiefel der Elfen': 0.5, 'Umhang der Elfen': 0.5,
+  'Nimmervoller Beutel': 7.5, 'Seil des Kletterns': 1.5, 'Brille der Nacht': 0, 'Handschuhe der Ogerkraft': 0.5,
+  'Stirnband des Intellekts': 0, 'Amulett der Gesundheit': 0, 'Zauberstab der Geschosse': 0.5, 'Sendsteine': 0,
+  'Immerbrennende Fackel': 0.5, 'Zauberschriftrolle': 0, 'Flammenzunge': 1.5, 'Frostbrand': 1.5,
+}
+
+export const CATALOG = [...WEAPONS, ...ARMOR_ITEMS, ...GEAR, ...POTIONS, ...MAGIC_ITEMS, ...EFFECTS].map((entry) =>
+  entry.type === 'item' && WEIGHTS[entry.name] !== undefined ? { ...entry, weight: WEIGHTS[entry.name] } : entry
+)
 
 // Für die Suche: Groß-/Kleinschreibung und Umlaute egal
 const normalize = (text) =>

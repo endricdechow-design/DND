@@ -26,6 +26,7 @@ function Lobby({ gameId }) {
   const [game, setGame] = useState(null)
   const [members, setMembers] = useState(null) // null = lädt noch
   const [cards, setCards] = useState([]) // Gruppenkarten aller Charaktere
+  const [openFinds, setOpenFinds] = useState(0) // offene Fundstücke (nur Spielleiter)
   const [selectedId, setSelectedId] = useState(null) // geöffnete Charakterkarte
   const [error, setError] = useState('')
   const [live, setLive] = useState(false)
@@ -76,6 +77,13 @@ function Lobby({ gameId }) {
     }
     setMembers(data)
     setCards(partyCards ?? [])
+    // Offene Funde zählen (Spieler sehen nur ihre eigenen – angezeigt wird es nur dem Spielleiter)
+    const { count } = await supabase
+      .from('item_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('game_id', gameId)
+      .eq('status', 'pending')
+    setOpenFinds(count ?? 0)
   }, [gameId, profile.id, backToDashboard])
 
   // Realtime: bei Änderungen an Teilnehmern oder Charakteren neu laden
@@ -91,7 +99,12 @@ function Lobby({ gameId }) {
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'party_cards' }, () => loadMembers())
       .subscribe((status) => setLive(status === 'SUBSCRIBED'))
 
+    // Neue Protokoll-Meldung (z. B. Fund gemeldet) → Zähler aktualisieren
+    const onGameLog = (e) => e.detail?.game_id === gameId && loadMembers()
+    window.addEventListener('dnd:game-log', onGameLog)
+
     return () => {
+      window.removeEventListener('dnd:game-log', onGameLog)
       supabase.removeChannel(channel)
     }
   }, [gameId, loadMembers])
@@ -289,6 +302,11 @@ function Lobby({ gameId }) {
             <p className="text-sm text-stone-400">
               {isGM ? 'Gegenstände, Karten, Handouts & Effekte verwalten' : 'Inventar, Karten, Handouts & Effekte'}
             </p>
+            {isGM && openFinds > 0 && (
+              <p className="mt-1 inline-block rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-stone-950">
+                🔍 {openFinds} {openFinds === 1 ? 'offener Fund' : 'offene Funde'} prüfen
+              </p>
+            )}
           </div>
         </Link>
         <div className="rounded-2xl border border-dashed border-stone-700 p-6 opacity-70">
