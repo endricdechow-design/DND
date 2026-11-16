@@ -83,6 +83,19 @@ function Wizard({ gameId, characterId }) {
   useEffect(() => {
     let cancelled = false
     async function load() {
+      // Ohne Runde („Meine Helden“): nur der eigene Charakter
+      if (!gameId) {
+        if (isEdit) {
+          const { data: character } = await supabase.from('characters').select('*').eq('id', characterId).maybeSingle()
+          if (cancelled) return
+          if (!character || character.user_id !== profile.id) return navigate('/', { replace: true })
+          if (character.game_id) return navigate(`/runde/${character.game_id}/charakter/${character.id}/bearbeiten`, { replace: true })
+          setOriginal(character)
+          setDraft(draftFromCharacter(character))
+        }
+        setReady(true)
+        return
+      }
       const { data: membership } = await supabase
         .from('game_members')
         .select('role')
@@ -196,10 +209,10 @@ function Wizard({ gameId, characterId }) {
       } else {
         const { error } = await supabase
           .from('characters')
-          .insert({ id, game_id: gameId, user_id: profile.id, ...row, hp_current: newMax, hp_max: newMax })
+          .insert({ id, game_id: gameId ?? null, user_id: profile.id, ...row, hp_current: newMax, hp_max: newMax })
         if (error) throw error
       }
-      navigate(`/runde/${gameId}/charakter/${id}`, { replace: true })
+      navigate(gameId ? `/runde/${gameId}/charakter/${id}` : `/helden/${id}`, { replace: true })
     } catch (err) {
       setError(translateError(err.message))
       setSaving(false)
@@ -215,8 +228,8 @@ function Wizard({ gameId, characterId }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon="🧝" eyebrow={isEdit ? 'Anpassen' : 'Ein neuer Held'} title={isEdit ? 'Charakter bearbeiten' : 'Neuer Charakter'}>
-        <Link to={isEdit ? `/runde/${gameId}/charakter/${characterId}` : `/runde/${gameId}`} className="btn-ghost">
+      <PageHeader icon="🧝" eyebrow={isEdit ? 'Anpassen' : gameId ? 'Ein neuer Held' : 'Für „Meine Helden“'} title={isEdit ? 'Charakter bearbeiten' : 'Neuer Charakter'}>
+        <Link to={!gameId ? (isEdit ? `/helden/${characterId}` : '/') : isEdit ? `/runde/${gameId}/charakter/${characterId}` : `/runde/${gameId}`} className="btn-ghost">
           Abbrechen
         </Link>
       </PageHeader>

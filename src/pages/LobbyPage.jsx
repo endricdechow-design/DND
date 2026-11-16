@@ -38,6 +38,7 @@ function Lobby({ gameId }) {
   const [myXp, setMyXp] = useState(null) // { xp, level } meines Charakters
   const [awarding, setAwarding] = useState(false)
   const [notice, setNotice] = useState('')
+  const [freeHeroes, setFreeHeroes] = useState([]) // meine Helden ohne Runde
 
   const backToDashboard = useCallback(
     (notice) => navigate('/', { replace: true, state: notice ? { notice } : undefined }),
@@ -97,6 +98,14 @@ function Lobby({ gameId }) {
     // Meine EP (Fehler ignorieren, falls die EP-Funktion noch nicht eingerichtet ist)
     const { data: mine } = await supabase.from('characters').select('xp, level').eq('game_id', gameId).eq('user_id', profile.id).maybeSingle()
     setMyXp(mine?.xp != null ? mine : null)
+    // Helden aus „Meine Helden“, die mitgebracht werden können
+    const { data: free } = await supabase
+      .from('characters')
+      .select('id, name, level, class, avatar_url')
+      .eq('user_id', profile.id)
+      .is('game_id', null)
+      .order('name')
+    setFreeHeroes(free ?? [])
   }, [gameId, profile.id, backToDashboard])
 
   // Realtime: bei Änderungen an Teilnehmern oder Charakteren neu laden
@@ -155,21 +164,29 @@ function Lobby({ gameId }) {
     }
   }
 
+  async function bringHero(hero) {
+    if (!(await ask(`${hero.name} in „${game.name}“ mitbringen? Solange der Held hier ist, kann er in keiner anderen Runde mitspielen.`, { confirmLabel: '🧝 Mitbringen' }))) return
+    const { error } = await supabase.rpc('bring_character', { p_character_id: hero.id, p_game_id: gameId })
+    if (error) return setError(translateError(error.message))
+    setNotice(`🧝 ${hero.name} ist jetzt in dieser Runde dabei!`)
+    loadMembers()
+  }
+
   async function removeMember(userId, name) {
-    if (!(await ask(`${name} wirklich aus der Runde entfernen?`))) return
+    if (!(await ask(`${name} wirklich aus der Runde entfernen? Der Held kehrt in die Heldenliste des Spielers zurück.`))) return
     const { error } = await supabase.from('game_members').delete().eq('game_id', gameId).eq('user_id', userId)
     if (error) setError(translateError(error.message))
   }
 
   async function leaveGame() {
-    if (!(await ask('Willst du diese Runde wirklich verlassen?'))) return
+    if (!(await ask('Willst du diese Runde wirklich verlassen? Dein Held kehrt in „Meine Helden“ zurück.'))) return
     const { error } = await supabase.from('game_members').delete().eq('game_id', gameId).eq('user_id', profile.id)
     if (error) setError(translateError(error.message))
     else backToDashboard('Du hast die Runde verlassen.')
   }
 
   async function deleteGame() {
-    if (!(await ask(`Runde „${game.name}“ endgültig löschen? Alle Spieler verlieren den Zugang.`))) return
+    if (!(await ask(`Runde „${game.name}“ endgültig löschen? Alle Spieler verlieren den Zugang – ihre Helden bleiben in „Meine Helden“ erhalten.`))) return
     const { error } = await supabase.from('games').delete().eq('id', gameId)
     if (error) setError(translateError(error.message))
     else backToDashboard('Die Runde wurde gelöscht.')
@@ -237,6 +254,29 @@ function Lobby({ gameId }) {
             <h2 className="title text-3xl">Erschaffe deinen Helden</h2>
             <p className="mx-auto max-w-md text-stone-400">Wähle Volk, Klasse und Werte – die App rechnet alles für dich aus.</p>
             <Link to={`/runde/${gameId}/charakter/neu`} className="btn-primary">✨ Charakter erstellen</Link>
+            {freeHeroes.length > 0 && (
+              <div className="mx-auto max-w-lg space-y-3 border-t border-stone-800 pt-5">
+                <p className="font-display text-lg text-amber-100">… oder bring einen deiner Helden mit</p>
+                <ul className="grid gap-2 sm:grid-cols-2">
+                  {freeHeroes.map((h) => (
+                    <li key={h.id}>
+                      <button
+                        type="button"
+                        onClick={() => bringHero(h)}
+                        className="flex w-full items-center gap-3 rounded-xl border border-stone-700 bg-stone-950/50 p-2 pr-3 text-left transition hover:border-violet-500"
+                      >
+                        <Avatar name={h.name} src={h.avatar_url} cls={h.class} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-semibold text-stone-100">{h.name}</span>
+                          <span className="block text-xs text-violet-300">Stufe {h.level}</span>
+                        </span>
+                        <span className="text-sm text-amber-300">mitbringen →</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </section>
       )}

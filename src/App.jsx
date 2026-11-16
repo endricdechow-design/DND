@@ -57,6 +57,10 @@ export default function App() {
         <Route path="/runde/:gameId" element={<LobbyPage />} />
         <Route path="/kompendium" element={<CompendiumPage />} />
         <Route path="/werkstatt" element={<WorkshopPage />} />
+        <Route path="/helden/neu" element={<CharacterWizardPage />} />
+        <Route path="/helden/:characterId" element={<CharacterSheetPage />} />
+        <Route path="/helden/:characterId/bearbeiten" element={<CharacterWizardPage />} />
+        <Route path="/helden/:characterId/aufstieg" element={<LevelUpPage />} />
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/werkstatt/:adventureId" element={<AdventurePage />} />
         <Route path="/runde/:gameId/bibliothek" element={<LibraryPage />} />

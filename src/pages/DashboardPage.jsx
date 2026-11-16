@@ -17,6 +17,7 @@ export default function DashboardPage() {
   const [games, setGames] = useState(null) // null = lädt noch
   const [listError, setListError] = useState('')
   const [hour] = useState(() => new Date().getHours()) // für die Begrüßung
+  const [heroes, setHeroes] = useState(null) // alle meine Charaktere (mit und ohne Runde)
 
   // Alle Runden, in denen ich Mitglied bin – inkl. meiner Rolle, meinem Helden und der Spielerzahl
   const loadGames = useCallback(async () => {
@@ -51,7 +52,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadGames()
-  }, [loadGames])
+    supabase
+      .from('characters')
+      .select('id, name, level, race, class, avatar_url, game_id, games(name)')
+      .eq('user_id', profile.id)
+      .order('name')
+      .then(({ data }) => setHeroes(data ?? []))
+  }, [loadGames, profile.id])
 
   const greeting = hour < 5 ? 'Gute Nacht' : hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Willkommen zurück' : 'Guten Abend'
   const hasGames = games?.length > 0
@@ -110,6 +117,34 @@ export default function DashboardPage() {
         </section>
       )}
 
+      {/* ---------- Meine Helden ---------- */}
+      {heroes !== null && (
+        <section className="space-y-3">
+          <div className="flex items-end justify-between gap-3 px-1">
+            <h2 className="title text-2xl">🧝 Meine Helden</h2>
+            <span className="text-xs text-stone-500">{heroes.length ? 'Ein Held ist immer in höchstens einer Runde' : ''}</span>
+          </div>
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {heroes.map((h) => (
+              <li key={h.id}>
+                <HeroTile hero={h} onOpen={() => navigate(h.game_id ? `/runde/${h.game_id}/charakter/${h.id}` : `/helden/${h.id}`)} />
+              </li>
+            ))}
+            <li>
+              <button
+                type="button"
+                onClick={() => navigate('/helden/neu')}
+                className="flex h-full min-h-40 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-800/70 p-4 text-violet-200 transition hover:border-violet-500 hover:bg-violet-950/30"
+              >
+                <span className="text-4xl" aria-hidden>✨</span>
+                <span className="font-display font-bold">Neuer Held</span>
+                <span className="text-center text-xs text-stone-500">auch ohne Runde – mitbringen kannst du ihn später</span>
+              </button>
+            </li>
+          </ul>
+        </section>
+      )}
+
       {hasGames && newAdventure}
 
       {/* ---------- Werkzeuge ---------- */}
@@ -121,6 +156,27 @@ export default function DashboardPage() {
         </div>
       </section>
     </div>
+  )
+}
+
+// Kachel eines Helden in „Meine Helden“
+function HeroTile({ hero, onOpen }) {
+  const line = [byKey(CLASSES, hero.class)?.name, `Stufe ${hero.level}`].filter(Boolean).join(' · ')
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group flex h-full w-full flex-col items-center gap-2 rounded-2xl border border-stone-800 bg-stone-900/70 p-4 text-center shadow-lg shadow-black/40 transition hover:-translate-y-0.5 hover:border-violet-500"
+    >
+      <Avatar name={hero.name} src={hero.avatar_url} cls={hero.class} size="lg" />
+      <div className="w-full min-w-0">
+        <p className="truncate font-display font-bold text-stone-100 group-hover:text-amber-200">{hero.name}</p>
+        <p className="truncate text-xs text-violet-300">{line}</p>
+      </div>
+      <p className={`mt-auto w-full truncate rounded-full px-2 py-0.5 text-xs ${hero.game_id ? 'bg-emerald-950/50 text-emerald-300' : 'bg-stone-800 text-stone-400'}`}>
+        {hero.game_id ? `📍 ${hero.games?.name ?? 'in einer Runde'}` : '📖 bereit für ein Abenteuer'}
+      </p>
+    </button>
   )
 }
 

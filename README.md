@@ -42,6 +42,8 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
 - **Inventar:** Anzahl (z. B. 3 Heiltränke), Gewicht in kg, Traglast = Stärke × 7,5 kg
   - Spieler melden **Fundstücke** selbst („🔍 Etwas gefunden“), der Spielleiter prüft, passt an und bestätigt
   - Wer überladen ist, kann nichts mehr aufsammeln (der Spielleiter kann trotzdem etwas geben)
+- **Meine Helden:** beliebig viele Charaktere auch ohne Runde erstellen und in eine Runde mitbringen (ein Held pro Runde,
+  ein Held immer nur in einer Runde; verlässt man die Runde, kehrt er zurück)
 - **Erfahrungspunkte:** Der Spielleiter verteilt EP (jeder bekommt X oder aufteilen); „Stufe aufsteigen“ ist gesperrt,
   bis genug EP da sind (SRD-Tabelle)
 - **Nebelkarte:** Der Spielleiter lädt eine Karte hoch, die Spieler sehen nur, was er aufdeckt (Nebel des Krieges)

@@ -39,12 +39,26 @@ function Sheet({ gameId, characterId }) {
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
+    // „Meine Helden“ (ohne Runde): nur der eigene Held
+    if (!gameId) {
+      const { data: char } = await supabase.from('characters').select('*, profiles(username)').eq('id', characterId).maybeSingle()
+      if (!char || char.user_id !== profile.id) return navigate('/', { replace: true })
+      if (char.game_id) return navigate(`/runde/${char.game_id}/charakter/${char.id}`, { replace: true })
+      setCharacter(char)
+      setIsGM(false)
+      return
+    }
     const [{ data: char }, { data: membership }] = await Promise.all([
       supabase.from('characters').select('*, profiles(username)').eq('id', characterId).maybeSingle(),
       supabase.from('game_members').select('role').eq('game_id', gameId).eq('user_id', profile.id).maybeSingle(),
     ])
     if (!membership) {
       navigate(`/runde/${gameId}`, { replace: true })
+      return
+    }
+    if (char && char.game_id !== gameId) {
+      // Held ist nicht (mehr) in dieser Runde
+      navigate(char.user_id === profile.id && !char.game_id ? `/helden/${char.id}` : `/runde/${gameId}`, { replace: true })
       return
     }
     if (!char) {
@@ -140,11 +154,21 @@ function Sheet({ gameId, characterId }) {
     const { error } = await supabase.from('characters').delete().eq('id', characterId)
     if (error) return setError(translateError(error.message))
     if (character.avatar_url) removeAvatar(character.avatar_url)
-    navigate(`/runde/${gameId}`, { replace: true })
+    navigate(gameId ? `/runde/${gameId}` : '/', { replace: true })
   }
 
+  // Held aus der Runde nehmen → zurück in „Meine Helden“
+  async function releaseCharacter() {
+    if (!(await ask(`${character.name} aus dieser Runde nehmen? Der Held kommt zurück in „Meine Helden“ und du kannst ihn später wieder mitbringen.`, { confirmLabel: '📖 Zurücklegen' }))) return
+    const { error } = await supabase.from('characters').update({ game_id: null }).eq('id', characterId)
+    if (error) return setError(translateError(error.message))
+    navigate(`/helden/${characterId}`, { replace: true })
+  }
+
+  const base = gameId ? `/runde/${gameId}/charakter/${characterId}` : `/helden/${characterId}`
+
   const isCaster = Boolean(spellRules(character.class, c.level, c.mods) && c.spellcasting)
-  const tabs = TABS.filter((t) => t.key !== 'zauber' || isCaster)
+  const tabs = TABS.filter((t) => (t.key !== 'zauber' || isCaster) && (t.key !== 'inventar' || gameId))
   const tab = tabs.some((t) => t.key === tabParam) ? tabParam : 'kampf'
   const setTab = (key) => setSearchParams(key === 'kampf' ? {} : { tab: key }, { replace: true })
   const hpCurrent = Math.min(character.hp_current, c.hpMax)
@@ -156,7 +180,14 @@ function Sheet({ gameId, characterId }) {
 
   return (
     <div className="space-y-6">
-      <GameNav gameId={gameId} />
+      {gameId ? (
+        <GameNav gameId={gameId} />
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link to="/" className="btn-ghost">← Meine Helden</Link>
+          <span className="badge-player">📖 Nicht in einer Runde</span>
+        </div>
+      )}
 
       {isGM && character.user_id !== profile.id && (
         <GameMasterBanner>
@@ -195,9 +226,9 @@ function Sheet({ gameId, characterId }) {
             </div>
             {canEdit && (
               <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
-                {c.level < 20 &&
+                {c.level < 20 && (gameId || xp?.canLevelUp) &&
                   (levelUpOpen ? (
-                    <Link to={`/runde/${gameId}/charakter/${characterId}/aufstieg`} className={`btn-primary px-4 py-2 text-sm ${xp?.canLevelUp ? 'levelup-ready' : ''}`}>
+                    <Link to={`${base}/aufstieg`} className={`btn-primary px-4 py-2 text-sm ${xp?.canLevelUp ? 'levelup-ready' : ''}`}>
                       ⬆️ Stufe aufsteigen
                     </Link>
                   ) : (
@@ -205,7 +236,7 @@ function Sheet({ gameId, characterId }) {
                       🔒 Aufstieg ab {formatXp(xp.next)} EP
                     </span>
                   ))}
-                <Link to={`/runde/${gameId}/charakter/${characterId}/bearbeiten`} className="btn-ghost">✏️ Bearbeiten</Link>
+                <Link to={`${base}/bearbeiten`} className="btn-ghost">✏️ Bearbeiten</Link>
               </div>
             )}
           </div>
@@ -348,6 +379,9 @@ function Sheet({ gameId, characterId }) {
 
       {canEdit && (
         <div className="flex justify-end pt-4">
+          {gameId && character.user_id === profile.id && (
+            <button onClick={releaseCharacter} className="mr-5 text-sm text-stone-500 hover:text-amber-200">📖 In „Meine Helden“ zurücklegen</button>
+          )}
           <button onClick={deleteCharacter} className="text-sm text-stone-600 hover:text-red-300">🗑️ Charakter löschen</button>
         </div>
       )}

@@ -59,7 +59,9 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 
 ## Datenmodell & Regeln
 - Tabelle `characters`: ein Charakter pro Spieler und Runde; Kernfelder als Spalten, alles Weitere in `data` (jsonb).
-  Lesbar **nur für Besitzer und Spielleiter**. `hp_max` ist ein Cache (App schreibt den berechneten Wert) für den Lebensbalken.
+  Lesbar **nur für Besitzer und Spielleiter**. „Meine Helden“ (Migration 012): `game_id` darf null sein (Held ohne Runde,
+  Routen `/helden/neu`, `/helden/:id`, `/helden/:id/bearbeiten|aufstieg`). In eine Runde nur per RPC `bring_character`;
+  Runde verlassen/gelöscht → `game_id` wird null (Held bleibt). Zurücklegen = Besitzer setzt `game_id` auf null. `hp_max` ist ein Cache (App schreibt den berechneten Wert) für den Lebensbalken.
 - Tabelle `party_cards`: öffentliche Gruppenkarte je Charakter (Name, Bild, Stufe, `hp_percent`, `conditions`, `public_notes`),
   lesbar für alle Mitglieder, wird **nur per Trigger** aus `characters` befüllt – nie direkt schreiben.
 - Erfahrungspunkte (Migration 011): `characters.xp`; Tabelle in `src/data/levels.js` (`xpForLevel`, `xpProgress`) und SQL `xp_for_level`.

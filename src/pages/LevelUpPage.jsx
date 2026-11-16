@@ -35,7 +35,7 @@ function LevelUp({ gameId, characterId }) {
       .then(({ data }) => {
         if (cancelled) return
         // Ohne Zugriff (weder Besitzer noch Spielleiter) zurück zum Bogen
-        if (!data) navigate(`/runde/${gameId}/charakter/${characterId}`, { replace: true })
+        if (!data) navigate(gameId ? `/runde/${gameId}/charakter/${characterId}` : '/', { replace: true })
         else setCharacter(data)
       })
     return () => {
@@ -49,7 +49,7 @@ function LevelUp({ gameId, characterId }) {
   const cls = byKey(CLASSES, character.class)
   const race = byKey(RACES, character.race)
   const newLevel = character.level + 1
-  const sheetLink = `/runde/${gameId}/charakter/${characterId}`
+  const sheetLink = gameId ? `/runde/${gameId}/charakter/${characterId}` : `/helden/${characterId}`
 
   // Spieler: erst mit genug EP (der Spielleiter darf immer – die Datenbank prüft es ebenfalls)
   const needed = xpForLevel(newLevel)
