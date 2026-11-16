@@ -69,7 +69,7 @@ const R = [
     '', ['grundregeln:vorteil']],
   ['stufenaufstieg', 'grundregeln', 'Erfahrung und Stufenaufstieg', 'xp, ep, erfahrungspunkte, level up, stufe',
     'Mit genug Erfahrungspunkten (EP) steigst du eine Stufe auf.',
-    '| Stufe | EP | | Stufe | EP |\n| 2 | 300 | | 11 | 85.000 |\n| 3 | 900 | | 12 | 100.000 |\n| 4 | 2.700 | | 13 | 120.000 |\n| 5 | 6.500 | | 14 | 140.000 |\n| 6 | 14.000 | | 15 | 165.000 |\n| 7 | 23.000 | | 16 | 195.000 |\n| 8 | 34.000 | | 17 | 225.000 |\n| 9 | 48.000 | | 18 | 265.000 |\n| 10 | 64.000 | | 19–20 | 305.000 / 355.000 |\n\nViele Gruppen steigen stattdessen auf, wenn der SL es sagt („Meilensteine“). In der App: „⬆️ Stufe aufsteigen“ auf dem Charakterbogen.',
+    '| Stufe | EP | | Stufe | EP |\n| 2 | 300 | | 11 | 85.000 |\n| 3 | 900 | | 12 | 100.000 |\n| 4 | 2.700 | | 13 | 120.000 |\n| 5 | 6.500 | | 14 | 140.000 |\n| 6 | 14.000 | | 15 | 165.000 |\n| 7 | 23.000 | | 16 | 195.000 |\n| 8 | 34.000 | | 17 | 225.000 |\n| 9 | 48.000 | | 18 | 265.000 |\n| 10 | 64.000 | | 19–20 | 305.000 / 355.000 |\n\nViele Gruppen steigen stattdessen auf, wenn der SL es sagt („Meilensteine“).\n\nIn der App: Der Spielleiter verteilt EP in der Lobby („✨ EP verteilen“). Sobald du genug EP hast, leuchtet auf deinem Charakterbogen „⬆️ Stufe aufsteigen“ – vorher ist der Knopf gesperrt.',
     '', ['spielleiter:begegnungen']],
   ['trefferpunkte', 'grundregeln', 'Trefferpunkte (TP)', 'hit points, hp, lp, lebenspunkte, leben',
     'Trefferpunkte zeigen, wie viel dein Charakter noch aushält. Bei 0 fällt er um.',

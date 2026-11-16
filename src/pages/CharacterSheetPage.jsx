@@ -5,7 +5,7 @@ import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
 import { removeAvatar } from '../lib/avatars'
 import { ABILITIES, abilityShort } from '../data/srd'
-import { featuresUpTo } from '../data/levels'
+import { featuresUpTo, formatXp, xpProgress } from '../data/levels'
 import { deriveCharacter, formatMeters, formatMod } from '../lib/character'
 import Avatar from '../components/Avatar'
 import GameNav from '../components/GameNav'
@@ -150,6 +150,9 @@ function Sheet({ gameId, characterId }) {
   const hpCurrent = Math.min(character.hp_current, c.hpMax)
   const hpPercent = c.hpMax > 0 ? Math.round((hpCurrent / c.hpMax) * 100) : 0
   const hp = hpStatus(hpPercent)
+  // EP (null, solange die Datenbank-Spalte noch fehlt → Aufstieg wie früher immer möglich)
+  const xp = character.xp != null ? xpProgress(character.xp, c.level) : null
+  const levelUpOpen = !xp || xp.canLevelUp || isGM
 
   return (
     <div className="space-y-6">
@@ -188,12 +191,20 @@ function Sheet({ gameId, characterId }) {
               <div className="h-2.5 overflow-hidden rounded-full bg-stone-800">
                 <div className={`h-full ${hp.bar} transition-all`} style={{ width: `${hpPercent}%` }} />
               </div>
+              {xp && <XpBar xp={xp} />}
             </div>
             {canEdit && (
               <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
-                {c.level < 20 && (
-                  <Link to={`/runde/${gameId}/charakter/${characterId}/aufstieg`} className="btn-primary px-4 py-2 text-sm">⬆️ Stufe aufsteigen</Link>
-                )}
+                {c.level < 20 &&
+                  (levelUpOpen ? (
+                    <Link to={`/runde/${gameId}/charakter/${characterId}/aufstieg`} className={`btn-primary px-4 py-2 text-sm ${xp?.canLevelUp ? 'levelup-ready' : ''}`}>
+                      ⬆️ Stufe aufsteigen
+                    </Link>
+                  ) : (
+                    <span className="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-stone-700 bg-stone-900/60 px-4 py-2 text-sm text-stone-500" title="Dein Spielleiter vergibt die Erfahrungspunkte">
+                      🔒 Aufstieg ab {formatXp(xp.next)} EP
+                    </span>
+                  ))}
                 <Link to={`/runde/${gameId}/charakter/${characterId}/bearbeiten`} className="btn-ghost">✏️ Bearbeiten</Link>
               </div>
             )}
@@ -352,6 +363,23 @@ const TABS = [
   { key: 'merkmale', icon: '📜', label: 'Merkmale' },
   { key: 'notizen', icon: '📝', label: 'Notizen' },
 ]
+
+// EP-Balken bis zur nächsten Stufe
+function XpBar({ xp }) {
+  return (
+    <div className="mt-2">
+      <div className="mb-1 flex items-center justify-between gap-2 text-xs">
+        <span className="text-amber-300">✨ {formatXp(xp.xp)} EP<InfoTip id="grundregeln:stufenaufstieg" /></span>
+        <span className={xp.canLevelUp ? 'font-semibold text-amber-300' : 'text-stone-500'}>
+          {xp.next == null ? 'Höchste Stufe' : xp.canLevelUp ? '⬆️ Aufstieg bereit!' : `noch ${formatXp(xp.missing)} bis Stufe ${xp.nextLevel}`}
+        </span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-stone-800">
+        <div className="h-full bg-gradient-to-r from-amber-600 to-amber-300 transition-all" style={{ width: `${xp.percent}%` }} />
+      </div>
+    </div>
+  )
+}
 
 // Zustände: nur die aktiven zeigen, Auswahl auf Knopfdruck
 function ConditionsCard({ name, conditions, onChange }) {

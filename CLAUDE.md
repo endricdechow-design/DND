@@ -62,6 +62,9 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   Lesbar **nur für Besitzer und Spielleiter**. `hp_max` ist ein Cache (App schreibt den berechneten Wert) für den Lebensbalken.
 - Tabelle `party_cards`: öffentliche Gruppenkarte je Charakter (Name, Bild, Stufe, `hp_percent`, `conditions`, `public_notes`),
   lesbar für alle Mitglieder, wird **nur per Trigger** aus `characters` befüllt – nie direkt schreiben.
+- Erfahrungspunkte (Migration 011): `characters.xp`; Tabelle in `src/data/levels.js` (`xpForLevel`, `xpProgress`) und SQL `xp_for_level`.
+  Trigger `guard_character_xp`: nur Spielleiter ändert EP, Spieler steigen nur mit genug EP auf (SL-Stufe setzen hebt EP an).
+  RPC `award_xp(game, user_ids, amount, split, reason)` → Protokoll `xp_awarded` an jeden Spieler. Dialog `party/XpDialog.jsx` (Lobby).
 - `data.levelUps` = Liste der Aufstiege `{ level, hpRoll (null = Durchschnitt), asi?: { dex: 1, … }, date }`;
   fließt in `deriveCharacter` ein (TP, Attribute). Spieler steigen nur über den Assistenten auf;
   der Spielleiter darf die Stufe im Bearbeiten-Dialog direkt setzen (spätere `levelUps` werden dann verworfen).

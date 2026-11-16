@@ -8,7 +8,7 @@ import { useTimedQueue } from '../lib/useTimedQueue'
  * (benutzt, gefunden), für Spieler, wenn sich eine Meldung an sie richtet
  * (z. B. Fund abgelehnt). Live + Nachschauen als Absicherung.
  */
-const ICONS = { item_used: '🧪', item_found: '🔍', item_rejected: '❌' }
+const ICONS = { item_used: '🧪', item_found: '🔍', item_rejected: '❌', xp_awarded: '✨' }
 
 export default function GameLogNotifier() {
   const { profile } = useAuth()

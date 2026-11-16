@@ -7,6 +7,8 @@ import { hpStatus, shortRaceName } from '../lib/party'
 import { CLASSES, RACES, byKey } from '../data/srd'
 import Avatar from '../components/Avatar'
 import AreaTile from '../components/AreaTile'
+import XpDialog from '../components/party/XpDialog'
+import { formatXp, xpProgress } from '../data/levels'
 import Modal from '../components/Modal'
 import GameNav from '../components/GameNav'
 import PartyCardDetails from '../components/party/PartyCardDetails'
@@ -33,6 +35,9 @@ function Lobby({ gameId }) {
   const [live, setLive] = useState(false)
   const [copied, setCopied] = useState(false)
   const [activeMap, setActiveMap] = useState(null) // gerade gezeigte Karte
+  const [myXp, setMyXp] = useState(null) // { xp, level } meines Charakters
+  const [awarding, setAwarding] = useState(false)
+  const [notice, setNotice] = useState('')
 
   const backToDashboard = useCallback(
     (notice) => navigate('/', { replace: true, state: notice ? { notice } : undefined }),
@@ -89,6 +94,9 @@ function Lobby({ gameId }) {
     // Gerade gezeigte Karte (Fehler ignorieren, falls die Kartenfunktion noch nicht eingerichtet ist)
     const { data: map } = await supabase.from('battle_maps').select('id, name').eq('game_id', gameId).eq('active', true).maybeSingle()
     setActiveMap(map ?? null)
+    // Meine EP (Fehler ignorieren, falls die EP-Funktion noch nicht eingerichtet ist)
+    const { data: mine } = await supabase.from('characters').select('xp, level').eq('game_id', gameId).eq('user_id', profile.id).maybeSingle()
+    setMyXp(mine?.xp != null ? mine : null)
   }, [gameId, profile.id, backToDashboard])
 
   // Realtime: bei Änderungen an Teilnehmern oder Charakteren neu laden
@@ -199,11 +207,15 @@ function Lobby({ gameId }) {
       </header>
 
       {error && <p className="alert-error">{error}</p>}
+      {notice && <p className="alert-info">{notice}</p>}
 
       {/* ---------- 1. Mein Held (Spieler) bzw. Spielleiter-Tisch ---------- */}
       {isGM ? (
         <section className="card space-y-4 p-4 sm:p-6">
-          <h2 className="title text-2xl">📜 Spielleiter-Tisch</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="title text-2xl">📜 Spielleiter-Tisch</h2>
+            <button type="button" className="btn-primary px-4 py-2 text-sm" onClick={() => setAwarding(true)}>✨ EP verteilen</button>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <AreaTile to={`/runde/${gameId}/karte`} icon="🗺️" title="Karte" text={activeMap ? `Gezeigt: ${activeMap.name}` : 'Nebelkarten & Tisch-Bildschirm'} highlight={!!activeMap} />
             <AreaTile
@@ -216,7 +228,7 @@ function Lobby({ gameId }) {
           </div>
         </section>
       ) : myCard ? (
-        <HeroCard card={myCard} subtitle={raceClass(myCard)} gameId={gameId} onDetails={() => setSelectedId(myCard.character_id)} />
+        <HeroCard card={myCard} xp={myXp} subtitle={raceClass(myCard)} gameId={gameId} onDetails={() => setSelectedId(myCard.character_id)} />
       ) : (
         <section className="card relative overflow-hidden text-center">
           <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgb(245_158_11/0.18),transparent_60%)]" aria-hidden />
@@ -284,6 +296,18 @@ function Lobby({ gameId }) {
         )}
       </section>
 
+      {awarding && (
+        <Modal onClose={() => setAwarding(false)}>
+          <XpDialog
+            gameId={gameId}
+            onDone={(message) => {
+              setAwarding(false)
+              setNotice(message)
+            }}
+          />
+        </Modal>
+      )}
+
       {/* Charakterkarte als Pop-up */}
       {selectedCard && (
         <Modal onClose={() => setSelectedId(null)}>
@@ -305,8 +329,9 @@ function Lobby({ gameId }) {
 }
 
 // Großer Kasten „Dein Held“ ganz oben
-function HeroCard({ card, subtitle, gameId, onDetails }) {
+function HeroCard({ card, xp, subtitle, gameId, onDetails }) {
   const status = hpStatus(card.hp_percent)
+  const progress = xp ? xpProgress(xp.xp, xp.level) : null
   return (
     <section className="relative overflow-hidden rounded-2xl border-2 border-violet-700/50 bg-gradient-to-br from-violet-950/60 via-stone-900/80 to-stone-950 p-5 shadow-2xl shadow-violet-950/40 sm:p-6">
       <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_30%,rgb(139_92_246/0.25),transparent_55%)]" aria-hidden />
@@ -331,9 +356,25 @@ function HeroCard({ card, subtitle, gameId, onDetails }) {
             <div className="h-2.5 overflow-hidden rounded-full bg-stone-800">
               <div className={`h-full ${status.bar} transition-all`} style={{ width: `${card.hp_percent ?? 100}%` }} />
             </div>
+            {progress && (
+              <>
+                <div className="mb-1 mt-2 flex items-center justify-between text-xs">
+                  <span className="text-amber-300">✨ {formatXp(progress.xp)} EP</span>
+                  <span className={progress.canLevelUp ? 'font-semibold text-amber-300' : 'text-stone-500'}>
+                    {progress.next == null ? 'Höchste Stufe' : progress.canLevelUp ? '⬆️ Aufstieg bereit!' : `noch ${formatXp(progress.missing)} bis Stufe ${progress.nextLevel}`}
+                  </span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-stone-800">
+                  <div className="h-full bg-gradient-to-r from-amber-600 to-amber-300" style={{ width: `${progress.percent}%` }} />
+                </div>
+              </>
+            )}
           </div>
           <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
             <Link to={`/runde/${gameId}/charakter/${card.character_id}`} className="btn-primary">📜 Charakterbogen</Link>
+            {progress?.canLevelUp && (
+              <Link to={`/runde/${gameId}/charakter/${card.character_id}/aufstieg`} className="btn-primary levelup-ready">⬆️ Aufsteigen</Link>
+            )}
             <Link to={`/runde/${gameId}/bibliothek`} className="btn-ghost">🎒 Inventar</Link>
           </div>
         </div>

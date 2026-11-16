@@ -189,3 +189,27 @@ export function featuresUpTo(classKey, level) {
   }
   return result
 }
+
+// ---------------------------------------------------------------------
+// Erfahrungspunkte (SRD): benötigte EP je Stufe – gleiche Tabelle wie in der Datenbank
+// ---------------------------------------------------------------------
+export const XP_TABLE = [0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
+  85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000]
+
+/** EP, die man für eine Stufe braucht (Stufe 1 = 0) */
+export const xpForLevel = (level) => XP_TABLE[Math.min(Math.max(level, 1), 20) - 1]
+
+/**
+ * Fortschritt zur nächsten Stufe:
+ * { xp, current, next, nextLevel, percent, missing, canLevelUp }
+ */
+export function xpProgress(xp = 0, level = 1) {
+  if (level >= 20) return { xp, current: xpForLevel(20), next: null, percent: 100, missing: 0, canLevelUp: false }
+  const current = xpForLevel(level)
+  const next = xpForLevel(level + 1)
+  const percent = Math.max(0, Math.min(100, Math.round(((xp - current) / (next - current)) * 100)))
+  return { xp, current, next, nextLevel: level + 1, percent, missing: Math.max(0, next - xp), canLevelUp: xp >= next }
+}
+
+/** 12500 → "12.500" */
+export const formatXp = (n) => (n ?? 0).toLocaleString('de-DE')

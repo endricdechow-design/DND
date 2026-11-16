@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { translateError } from '../lib/errors'
 import { ABILITIES, byKey, CLASSES, RACES } from '../data/srd'
-import { featuresAtLevel, getsSpellsAt, isAsiLevel } from '../data/levels'
+import { featuresAtLevel, formatXp, getsSpellsAt, isAsiLevel, xpForLevel } from '../data/levels'
+import { useAuth } from '../lib/auth'
 import { abilityMod, averageHitDie, deriveCharacter, formatMod, proficiencyBonus } from '../lib/character'
 import Avatar from '../components/Avatar'
 import PageSkeleton from '../components/Skeleton'
@@ -14,6 +15,7 @@ export default function LevelUpPage() {
 }
 
 function LevelUp({ gameId, characterId }) {
+  const { profile } = useAuth()
   const navigate = useNavigate()
   const [character, setCharacter] = useState(null)
   const [hpMethod, setHpMethod] = useState('average') // 'average' oder 'roll'
@@ -48,6 +50,22 @@ function LevelUp({ gameId, characterId }) {
   const race = byKey(RACES, character.race)
   const newLevel = character.level + 1
   const sheetLink = `/runde/${gameId}/charakter/${characterId}`
+
+  // Spieler: erst mit genug EP (der Spielleiter darf immer – die Datenbank prüft es ebenfalls)
+  const needed = xpForLevel(newLevel)
+  if (character.level < 20 && character.xp != null && character.user_id === profile.id && character.xp < needed) {
+    return (
+      <div className="card space-y-4 text-center">
+        <p className="text-5xl">🔒</p>
+        <h1 className="title text-3xl">Noch nicht genug Erfahrung</h1>
+        <p className="text-stone-400">
+          Für Stufe {newLevel} braucht {character.name} {formatXp(needed)} EP – aktuell sind es {formatXp(character.xp)} EP.
+          Dein Spielleiter vergibt die Erfahrungspunkte.
+        </p>
+        <Link to={sheetLink} className="btn-ghost">← Zurück zum Bogen</Link>
+      </div>
+    )
+  }
 
   if (character.level >= 20) {
     return (
