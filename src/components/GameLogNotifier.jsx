@@ -10,6 +10,12 @@ import { logLink } from '../lib/notifyTargets'
  * (benutzt, gefunden), für Spieler, wenn sich eine Meldung an sie richtet
  * (z. B. Fund abgelehnt). Live + Nachschauen als Absicherung.
  */
+// Text des „Ansehen“-Knopfs – passend zum Ziel (siehe lib/notifyTargets.js)
+const BUTTON_LABEL = {
+  xp_awarded: '📜 Charakterbogen ansehen →',
+  item_used: '🎒 Inventar ansehen →',
+}
+
 const ICONS = { item_used: '🧪', item_found: '🔍', item_rejected: '❌', xp_awarded: '✨' }
 
 export default function GameLogNotifier() {
@@ -78,17 +84,17 @@ export default function GameLogNotifier() {
         onClick={open}
         onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && open()}
         title="Antippen zum Öffnen"
-        className="gift-toast pointer-events-auto relative flex w-full max-w-sm cursor-pointer items-center gap-3 overflow-hidden rounded-2xl border-2 border-violet-500 bg-stone-900/95 p-4 backdrop-blur transition hover:border-violet-300"
+        className="gift-toast pointer-events-auto relative w-full max-w-sm cursor-pointer overflow-hidden rounded-2xl border-2 border-violet-500 bg-stone-900/95 p-4 backdrop-blur transition hover:border-violet-300"
       >
-        <span className="toast-countdown absolute inset-x-0 bottom-0 h-1 bg-violet-400/70" style={{ animationDuration: `${duration}ms` }} />
-        <span className="text-3xl" aria-hidden>{ICONS[message.kind] ?? '📜'}</span>
-        <div className="min-w-0 flex-1">
-          <p className="text-stone-100">{message.text}</p>
-          <p className="mt-1 text-xs text-violet-300">Antippen zum Öffnen →</p>
+        <span className="toast-countdown absolute inset-x-3 bottom-1 h-1 rounded-full bg-violet-400/70" style={{ animationDuration: `${duration}ms` }} />
+        <div className="flex items-center gap-3">
+          <span className="text-4xl" aria-hidden>{ICONS[message.kind] ?? '📜'}</span>
+          <p className="min-w-0 flex-1 text-stone-100">{message.text}</p>
+          <button type="button" onClick={(e) => { e.stopPropagation(); dismiss() }} className="self-start rounded-full px-2 text-stone-400 hover:text-stone-100" aria-label="Schließen">
+            ✕
+          </button>
         </div>
-        <button type="button" onClick={(e) => { e.stopPropagation(); dismiss() }} className="rounded-full px-2 text-stone-400 hover:text-stone-100" aria-label="Schließen">
-          ✕
-        </button>
+        <span className="btn-secondary mt-3 w-full">{BUTTON_LABEL[message.kind] ?? '📚 In der Bibliothek ansehen →'}</span>
       </div>
     </div>
   )

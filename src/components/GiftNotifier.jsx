@@ -165,7 +165,7 @@ export default function GiftNotifier() {
         </div>
 
         <span className="btn-primary relative mt-3 w-full">
-          {gift.type === 'item' || gift.type === 'effect' ? '🎒 Im Inventar ansehen →' : 'Ansehen →'}
+          {gift.type === 'item' || gift.type === 'effect' ? '🎒 Im Inventar ansehen →' : '📚 In der Bibliothek ansehen →'}
         </span>
         {count > 1 && <p className="relative mt-2 text-center text-xs text-stone-400">+ {count - 1} weitere</p>}
       </div>
