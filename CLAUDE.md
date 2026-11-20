@@ -85,6 +85,7 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - Benachrichtigungen (Geschenk, Protokoll) nutzen Realtime **und** regelmäßiges Nachschauen als Absicherung;
   Anzeige über `src/lib/useTimedQueue.js` (10 s, feste Ablaufzeit, Ablaufbalken). `GameLogNotifier` sendet
   zusätzlich das Fenster-Ereignis `dnd:game-log`, auf das z. B. die Bibliothek mit Neuladen reagiert.
+  Einblendungen sind antippbar: Ziele in `src/lib/notifyTargets.js` (Geschenk → Inventar-Reiter, EP → Bogen, Funde → Bibliothek).
 - `src/lib/images.js` – generisches Verkleinern/Hochladen/Löschen von Bildern (Avatare und Bibliothek nutzen es).
 - Würfeln passiert bewusst am echten Tisch – keine Würfelfunktion einbauen, außer der Nutzer wünscht es.
 - Rollen gelten **pro Runde**: `game_members.role` ist `'gm'` (Spielleiter, Ersteller) oder `'player'`.

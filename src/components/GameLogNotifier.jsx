@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { useTimedQueue } from '../lib/useTimedQueue'
+import { logLink } from '../lib/notifyTargets'
 
 /**
  * Kurze Meldungen aus dem Protokoll: für Spielleiter, wenn Spieler etwas tun
@@ -12,6 +14,7 @@ const ICONS = { item_used: '🧪', item_found: '🔍', item_rejected: '❌', xp_
 
 export default function GameLogNotifier() {
   const { profile } = useAuth()
+  const navigate = useNavigate()
   const { current, push, dismiss, duration } = useTimedQueue(10000)
 
   useEffect(() => {
@@ -61,13 +64,29 @@ export default function GameLogNotifier() {
 
   if (!current) return null
   const message = current.value
+
+  async function open() {
+    dismiss()
+    navigate(await logLink(message, profile.id))
+  }
   return (
     <div className="pointer-events-none fixed inset-x-0 top-20 z-[60] flex justify-center px-4" role="status" aria-live="polite">
-      <div key={current.key} className="gift-toast pointer-events-auto relative flex w-full max-w-sm items-center gap-3 overflow-hidden rounded-2xl border-2 border-violet-500 bg-stone-900/95 p-4 backdrop-blur">
+      <div
+        key={current.key}
+        role="button"
+        tabIndex={0}
+        onClick={open}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && open()}
+        title="Antippen zum Öffnen"
+        className="gift-toast pointer-events-auto relative flex w-full max-w-sm cursor-pointer items-center gap-3 overflow-hidden rounded-2xl border-2 border-violet-500 bg-stone-900/95 p-4 backdrop-blur transition hover:border-violet-300"
+      >
         <span className="toast-countdown absolute inset-x-0 bottom-0 h-1 bg-violet-400/70" style={{ animationDuration: `${duration}ms` }} />
         <span className="text-3xl" aria-hidden>{ICONS[message.kind] ?? '📜'}</span>
-        <p className="min-w-0 flex-1 text-stone-100">{message.text}</p>
-        <button type="button" onClick={dismiss} className="rounded-full px-2 text-stone-400 hover:text-stone-100" aria-label="Schließen">
+        <div className="min-w-0 flex-1">
+          <p className="text-stone-100">{message.text}</p>
+          <p className="mt-1 text-xs text-violet-300">Antippen zum Öffnen →</p>
+        </div>
+        <button type="button" onClick={(e) => { e.stopPropagation(); dismiss() }} className="rounded-full px-2 text-stone-400 hover:text-stone-100" aria-label="Schließen">
           ✕
         </button>
       </div>

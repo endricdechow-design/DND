@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { useTimedQueue } from '../lib/useTimedQueue'
+import { giftLink } from '../lib/notifyTargets'
 
 const TEXT = {
   item: { icon: '🎁', title: 'Du hast etwas erhalten!' },
@@ -119,9 +120,22 @@ export default function GiftNotifier() {
   const gift = current.value
   const text = TEXT[gift.type] ?? TEXT.item
 
+  async function open() {
+    dismiss()
+    navigate(await giftLink(gift, profile.id))
+  }
+
   return (
     <div className="above-bottom-nav pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex justify-center px-4" role="status" aria-live="polite">
-      <div key={current.key} className="gift-toast pointer-events-auto relative w-full max-w-sm rounded-2xl border-2 border-amber-500 bg-stone-900/95 p-4 backdrop-blur">
+      <div
+        key={current.key}
+        role="button"
+        tabIndex={0}
+        onClick={open}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && open()}
+        className="gift-toast pointer-events-auto relative w-full max-w-sm cursor-pointer rounded-2xl border-2 border-amber-500 bg-stone-900/95 p-4 backdrop-blur transition hover:border-amber-300"
+        title="Antippen zum Öffnen"
+      >
         <span className="toast-countdown absolute inset-x-3 bottom-1 h-1 rounded-full bg-amber-400/70" style={{ animationDuration: `${duration}ms` }} />
         {/* Funkeln */}
         {[8, 24, 42, 60, 76, 90].map((left, i) => (
@@ -145,21 +159,14 @@ export default function GiftNotifier() {
             <p className="text-sm font-semibold text-amber-300">{text.title}</p>
             <p className="title truncate text-xl">{gift.name}</p>
           </div>
-          <button type="button" onClick={dismiss} className="self-start rounded-full px-2 text-stone-400 hover:text-stone-100" aria-label="Schließen">
+          <button type="button" onClick={(e) => { e.stopPropagation(); dismiss() }} className="self-start rounded-full px-2 text-stone-400 hover:text-stone-100" aria-label="Schließen">
             ✕
           </button>
         </div>
 
-        <button
-          type="button"
-          className="btn-primary relative mt-3 w-full"
-          onClick={() => {
-            dismiss()
-            navigate(`/runde/${gift.game_id}/bibliothek`)
-          }}
-        >
-          Ansehen →
-        </button>
+        <span className="btn-primary relative mt-3 w-full">
+          {gift.type === 'item' || gift.type === 'effect' ? '🎒 Im Inventar ansehen →' : 'Ansehen →'}
+        </span>
         {count > 1 && <p className="relative mt-2 text-center text-xs text-stone-400">+ {count - 1} weitere</p>}
       </div>
     </div>
