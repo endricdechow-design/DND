@@ -67,7 +67,7 @@ export default function DashboardPage() {
     <section className="space-y-3">
       <h2 className="title px-1 text-2xl">✨ Neues Abenteuer</h2>
       <div className="grid gap-4 md:grid-cols-2">
-        <CreateGameCard onCreated={(game) => navigate(`/runde/${game.id}`)} />
+        <CreateGameCard onCreated={(game) => navigate(`/runde/${game.id}/hausregeln?start=1`)} />
         <JoinGameCard onJoined={(game) => navigate(`/runde/${game.id}`)} />
       </div>
     </section>

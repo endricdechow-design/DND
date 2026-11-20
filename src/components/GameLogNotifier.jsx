@@ -14,9 +14,10 @@ import { logLink } from '../lib/notifyTargets'
 const BUTTON_LABEL = {
   xp_awarded: '📜 Charakterbogen ansehen →',
   item_used: '🎒 Inventar ansehen →',
+  house_rule: '🏠 Hausregeln ansehen →',
 }
 
-const ICONS = { item_used: '🧪', item_found: '🔍', item_rejected: '❌', xp_awarded: '✨' }
+const ICONS = { item_used: '🧪', item_found: '🔍', item_rejected: '❌', xp_awarded: '✨', house_rule: '🏠' }
 
 export default function GameLogNotifier() {
   const { profile } = useAuth()

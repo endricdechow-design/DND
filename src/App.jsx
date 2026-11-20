@@ -17,6 +17,7 @@ const WorkshopPage = lazy(() => import('./pages/WorkshopPage'))
 const FeedbackPage = lazy(() => import('./pages/FeedbackPage'))
 const AdventurePage = lazy(() => import('./pages/AdventurePage'))
 const MapPage = lazy(() => import('./pages/MapPage'))
+const HouseRulesPage = lazy(() => import('./pages/HouseRulesPage'))
 const TablePage = lazy(() => import('./pages/TablePage'))
 
 export default function App() {
@@ -65,6 +66,7 @@ export default function App() {
         <Route path="/werkstatt/:adventureId" element={<AdventurePage />} />
         <Route path="/runde/:gameId/bibliothek" element={<LibraryPage />} />
         <Route path="/runde/:gameId/karte" element={<MapPage />} />
+        <Route path="/runde/:gameId/hausregeln" element={<HouseRulesPage />} />
         <Route path="/runde/:gameId/charakter/neu" element={<CharacterWizardPage />} />
         <Route path="/runde/:gameId/charakter/:characterId" element={<CharacterSheetPage />} />
         <Route path="/runde/:gameId/charakter/:characterId/bearbeiten" element={<CharacterWizardPage />} />

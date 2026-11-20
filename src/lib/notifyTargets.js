@@ -26,6 +26,8 @@ export async function logLink(row, myUserId) {
       return (await characterLink(row.game_id, myUserId, 'kampf')) ?? `/runde/${row.game_id}`
     case 'item_used': // Spielleiter: Inventar des Spielers, der etwas benutzt hat
       return (await characterLink(row.game_id, row.user_id, 'inventar')) ?? `/runde/${row.game_id}/bibliothek`
+    case 'house_rule':
+      return `/runde/${row.game_id}/hausregeln`
     default: // Funde, abgelehnte Funde …
       return `/runde/${row.game_id}/bibliothek`
   }

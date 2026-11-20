@@ -40,6 +40,7 @@ export default function GameNav({ gameId }) {
     ...(myCharacterId ? [{ to: `/runde/${gameId}/charakter/${myCharacterId}`, label: 'Mein Charakter', short: 'Held', icon: '🧝', end: false }] : []),
     { to: `/runde/${gameId}/karte`, label: 'Karte', icon: '🗺️', end: true },
     { to: `/runde/${gameId}/bibliothek`, label: 'Bibliothek', icon: '📚', end: true },
+    { to: `/runde/${gameId}/hausregeln`, label: 'Hausregeln', icon: '🏠', end: true, desktopOnly: true },
   ]
 
   return (
@@ -73,7 +74,7 @@ export default function GameNav({ gameId }) {
         aria-label="Bereiche der Runde"
       >
         <div className="mx-auto flex max-w-md">
-          {[{ to: '/', label: 'Runden', icon: '🏠', end: true }, ...tabs].map((tab) => (
+          {[{ to: '/', label: 'Runden', icon: '🏠', end: true }, ...tabs.filter((t) => !t.desktopOnly)].map((tab) => (
             <NavLink
               key={tab.to}
               to={tab.to}

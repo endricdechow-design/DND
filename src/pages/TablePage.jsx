@@ -15,18 +15,35 @@ export default function TablePage() {
   const lastMapId = useRef(null)
   const hideTimer = useRef(null)
 
+  const version = useRef(undefined) // zuletzt geladener Stand der Karte
+
   const load = useCallback(async () => {
     const { data, error } = await supabase.rpc('get_display_state', { p_code: code })
     if (error) return // z. B. kurz offline → beim nächsten Mal wieder versuchen
     setState(data ?? null)
   }, [code])
 
+  // Sparsam nachschauen: nur den winzigen „Stand“ abfragen und
+  // die ganze Karte nur laden, wenn sich etwas geändert hat
+  const check = useCallback(async () => {
+    const { data, error } = await supabase.rpc('get_display_version', { p_code: code })
+    if (error) {
+      // Datenbank noch ohne get_display_version (Migration 013 fehlt) → wie früher komplett laden
+      if (/function|schema cache/i.test(error.message)) load()
+      return
+    }
+    if (data !== version.current) {
+      version.current = data
+      load()
+    }
+  }, [code, load])
+
   // Laden + regelmäßig nachschauen
   useEffect(() => {
     load()
-    const interval = setInterval(load, 4000)
+    const interval = setInterval(check, 4000)
     return () => clearInterval(interval)
-  }, [load])
+  }, [load, check])
 
   // Sofort neu laden, wenn der Spielleiter etwas ändert
   const gameId = state?.game_id

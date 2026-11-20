@@ -73,8 +73,44 @@ export const TOOLS = [
   { key: 'brush', icon: '🖌️', label: 'Pinsel' },
 ]
 
-const round = (n) => Math.round(n * 10000) / 10000
+// 3 Nachkommastellen = auf ~2 Pixel genau (reicht für weichen Nebel, spart Speicher)
+const round = (n) => Math.round(n * 1000) / 1000
 export const roundPoint = ([x, y]) => [round(x), round(y)]
+
+/**
+ * Pinselstrich vereinfachen (Ramer-Douglas-Peucker): Punkte, die kaum von einer
+ * geraden Linie abweichen, fallen weg. tolerance relativ zur Bildbreite.
+ */
+export function simplifyStroke(pts, tolerance) {
+  if (pts.length < 3) return pts
+  const distToSegment = ([px, py], [ax, ay], [bx, by]) => {
+    const dx = bx - ax
+    const dy = by - ay
+    const len = dx * dx + dy * dy
+    const t = len ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len)) : 0
+    return Math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+  }
+  const keep = new Array(pts.length).fill(false)
+  keep[0] = keep[pts.length - 1] = true
+  const stack = [[0, pts.length - 1]]
+  while (stack.length) {
+    const [a, b] = stack.pop()
+    let max = 0
+    let index = -1
+    for (let i = a + 1; i < b; i++) {
+      const d = distToSegment(pts[i], pts[a], pts[b])
+      if (d > max) {
+        max = d
+        index = i
+      }
+    }
+    if (max > tolerance && index !== -1) {
+      keep[index] = true
+      stack.push([a, index], [index, b])
+    }
+  }
+  return pts.filter((_, i) => keep[i])
+}
 
 /** Zeichnet eine Form in Pixelkoordinaten (w × h, versetzt um ox/oy) */
 function traceShape(ctx, shape, w, h, ox, oy) {

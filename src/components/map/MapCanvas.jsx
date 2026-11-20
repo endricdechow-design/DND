@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { CLOUD_TILE, FOG_COLOR, cloudTexture, isRoomRevealed, renderFog, roundPoint, shapeCenter } from '../../lib/fog'
+import { CLOUD_TILE, FOG_COLOR, cloudTexture, isRoomRevealed, renderFog, roundPoint, shapeCenter, simplifyStroke } from '../../lib/fog'
 
 const FOG_RES = 1600 // Auflösung des Nebels (Pixel Breite) – reicht für weiche Kanten
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v))
@@ -242,7 +242,7 @@ export default function MapCanvas({
         const shape = { t: 'rect', ...rnd({ x: Math.min(x1, x2), y: Math.min(y1, y2), w: Math.abs(x2 - x1), h: Math.abs(y2 - y1) }) }
         if (shape.w > 0.004 && shape.h > 0.004) onShape(shape)
       } else if (draft.t === 'brush') {
-        onShape({ t: 'brush', r: draft.r, pts: draft.pts })
+        onShape({ t: 'brush', r: draft.r, pts: simplifyStroke(draft.pts, draft.r * 0.3) })
       }
       setDraft(null)
     } else if (g.mode === 'pan' && !g.moved && drawing && tool === 'poly') {
@@ -375,7 +375,7 @@ export default function MapCanvas({
   )
 }
 
-const rnd = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v * 10000) / 10000]))
+const rnd = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v * 1000) / 1000]))
 
 function MapButton({ label, onClick, children }) {
   return (

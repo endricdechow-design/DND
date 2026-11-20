@@ -76,7 +76,7 @@ export default function HouseRulesManager() {
   )
 }
 
-function HouseRuleEditor({ rule, gameId: initialGame, games, onDone }) {
+export function HouseRuleEditor({ rule, gameId: initialGame, games, onDone }) {
   const [gameId, setGameId] = useState(rule?.game_id ?? initialGame)
   const [title, setTitle] = useState(rule?.title ?? '')
   const [body, setBody] = useState(rule?.body ?? '')

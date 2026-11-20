@@ -28,7 +28,9 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
 - `src/data/compendium/` – Kompendium: `rules.js` (Regeln/Glossar/SL-Tipps als kompakte Arrays), `monsters.js` (SRD-Werte),
   `index.js` (führt alles zusammen: Regeln, Zustände, Fertigkeiten, Zauber, Katalog, Völker, Klassen, Monster + `searchCompendium`).
   IDs `kategorie:schlüssel`; ⓘ-Symbole über `<InfoTip id="…" />`. `src/lib/compendium.jsx` = Provider (Pop-up + Hausregeln).
-  Tabelle `house_rules` (Migration 007): lesen alle Mitglieder, schreiben nur Spielleiter.
+  Tabelle `house_rules` (Migration 007): lesen alle Mitglieder, schreiben nur Spielleiter. Seite `HouseRulesPage.jsx`
+  (`/runde/:id/hausregeln`, mit `?start=1` direkt nach „Runde erstellen“: Vorlagen aus `src/data/houseRuleTemplates.js`,
+  Auswahl `compendium/TemplatePicker.jsx`). Migration 013: Trigger meldet Änderungen an alle Spieler (`game_log` kind `house_rule`).
 - Werkstatt (Migration 008): Tabellen `adventures` (Besitzer, `share_code`) und `adventure_items` (type inkl. `npc`), nur für den
   Besitzer sichtbar. RPCs `load_adventure_into_game` (kopiert versteckt in die Bibliothek, Ordner = Abenteuername,
   `data.source.item_id` verhindert Doppelte, NSC → handout mit `data.npc`) und `import_shared_adventure(code)`.
@@ -44,7 +46,9 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   (`MapCanvas` = Anzeige + Zoom + Zeichnen; Nebel = Wolken-Textur `cloudTexture()` + ziehende Schwaden `.fog-drift`), Seite `MapPage.jsx` (`/runde/:id/karte`). Werkstatt-Karten speichern Räume in
   `data.rooms` (werden beim Anlegen übernommen). Kanal `map-<gameId>` (Broadcast `changed`).
 - Tisch-Bildschirm: `/tisch/:code` (`TablePage.jsx`, **ohne Anmeldung**, außerhalb von Layout). Tabelle `game_displays`
-  (Code je Runde), RPCs `get_display_code`, `renew_display_code`, `get_display_state(code)` (auch für `anon`, liefert nie Räume).
+  (Code je Runde), RPCs `get_display_code`, `renew_display_code`, `get_display_state(code)` (auch für `anon`, liefert nie Räume),
+  `get_display_version(code)` (Migration 013: winziger Stand, der Bildschirm lädt nur bei Änderung neu). Pinselstriche werden
+  mit `simplifyStroke` vereinfacht, Koordinaten auf 3 Nachkommastellen.
 - App/PWA: `public/manifest.webmanifest`, Symbole in `public/icons/`, `public/sw.js` (Service Worker cacht bewusst **nur** die
   Offline-Seite `public/offline.html` – keine alten Versionen), Registrierung in `src/main.jsx` (nur im Build).
   `src/lib/install.js` + `src/components/InstallApp.jsx` = „📱 Als App installieren“ im Profil-Menü (iPhone: Anleitung).

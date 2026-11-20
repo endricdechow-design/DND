@@ -39,6 +39,7 @@ function Lobby({ gameId }) {
   const [awarding, setAwarding] = useState(false)
   const [notice, setNotice] = useState('')
   const [freeHeroes, setFreeHeroes] = useState([]) // meine Helden ohne Runde
+  const [ruleCount, setRuleCount] = useState(null) // Anzahl Hausregeln
 
   const backToDashboard = useCallback(
     (notice) => navigate('/', { replace: true, state: notice ? { notice } : undefined }),
@@ -106,6 +107,8 @@ function Lobby({ gameId }) {
       .is('game_id', null)
       .order('name')
     setFreeHeroes(free ?? [])
+    const { count: rules } = await supabase.from('house_rules').select('id', { count: 'exact', head: true }).eq('game_id', gameId)
+    setRuleCount(rules ?? 0)
   }, [gameId, profile.id, backToDashboard])
 
   // Realtime: bei Änderungen an Teilnehmern oder Charakteren neu laden
@@ -233,7 +236,7 @@ function Lobby({ gameId }) {
             <h2 className="title text-2xl">📜 Spielleiter-Tisch</h2>
             <button type="button" className="btn-primary px-4 py-2 text-sm" onClick={() => setAwarding(true)}>✨ EP verteilen</button>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <AreaTile to={`/runde/${gameId}/karte`} icon="🗺️" title="Karte" text={activeMap ? `Gezeigt: ${activeMap.name}` : 'Nebelkarten & Tisch-Bildschirm'} highlight={!!activeMap} />
             <AreaTile
               to={`/runde/${gameId}/bibliothek`}
@@ -242,6 +245,7 @@ function Lobby({ gameId }) {
               text="Gegenstände, Handouts & Effekte"
               badge={openFinds > 0 ? `🔍 ${openFinds} ${openFinds === 1 ? 'offener Fund' : 'offene Funde'}` : null}
             />
+            <AreaTile to={`/runde/${gameId}/hausregeln`} icon="🏠" title="Hausregeln" text={ruleCount ? `${ruleCount} ${ruleCount === 1 ? 'Regel' : 'Regeln'} bei euch am Tisch` : 'Noch keine – jetzt festlegen'} />
           </div>
         </section>
       ) : myCard ? (
@@ -313,9 +317,10 @@ function Lobby({ gameId }) {
 
       {/* ---------- 3. Bereiche (Spieler) ---------- */}
       {!isGM && (
-        <section className="grid gap-3 sm:grid-cols-2">
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <AreaTile to={`/runde/${gameId}/karte`} icon="🗺️" title="Karte" text={activeMap ? `Gerade: ${activeMap.name}` : 'Noch keine Karte gezeigt'} highlight={!!activeMap} />
           <AreaTile to={`/runde/${gameId}/bibliothek`} icon="🎒" title="Inventar & Bibliothek" text="Gegenstände, Handouts & Effekte" />
+          <AreaTile to={`/runde/${gameId}/hausregeln`} icon="🏠" title="Hausregeln" text={ruleCount ? `${ruleCount} ${ruleCount === 1 ? 'Regel' : 'Regeln'} bei euch am Tisch` : 'Es gelten die normalen Regeln'} />
         </section>
       )}
 
