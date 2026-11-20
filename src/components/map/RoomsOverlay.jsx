@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import RoomsEditor from './RoomsEditor'
+import { normalizeGrid } from '../../lib/grid'
 
 /** Großes Fenster über der ganzen Seite, um Räume auf einer Karte einzuzeichnen */
-export default function RoomsOverlay({ title, imageUrl, rooms: initialRooms, onSave, onClose }) {
+export default function RoomsOverlay({ title, imageUrl, rooms: initialRooms, grid = null, onSave, onClose }) {
   const [rooms, setRooms] = useState(initialRooms ?? [])
   return createPortal(
     <div className="fixed inset-0 z-[60] overflow-y-auto bg-stone-950/95 backdrop-blur-sm" role="dialog" aria-modal="true">
@@ -18,7 +19,7 @@ export default function RoomsOverlay({ title, imageUrl, rooms: initialRooms, onS
             <button type="button" className="btn-primary" onClick={() => onSave(rooms)}>✓ Übernehmen</button>
           </div>
         </div>
-        <RoomsEditor imageUrl={imageUrl} rooms={rooms} onChange={setRooms} height="h-[65vh] min-h-80" />
+        <RoomsEditor imageUrl={imageUrl} rooms={rooms} grid={grid ? normalizeGrid(grid) : null} onChange={setRooms} height="h-[65vh] min-h-80" />
       </div>
     </div>,
     document.body

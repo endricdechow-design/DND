@@ -51,6 +51,8 @@ Eine Web-App für unsere Dungeons & Dragons (5e) Runde – gebaut mit Claude.
   - Werkzeuge: Rechteck, Vieleck, Pinsel, Verdecken, Rückgängig, alles auf-/zudecken
   - Räume vorbereiten (auch schon in der Werkstatt) und im Spiel mit einem Tipp aufdecken
   - Live bei allen Spielern, mit sanftem Auflösen des Nebels; zoomen mit zwei Fingern oder Mausrad
+- **Raster:** jede Karte bekommt ein Raster (1 Feld = 1,5 m) – Kästchen markieren oder Größe angeben; blendet beim
+  Herauszoomen aus; Räume zeigen ihre Größe in Metern
 - **Tisch-Bildschirm:** Fernseher/Laptop/Tablet zeigt per Code-Link dauerhaft die Karte – ohne Anmeldung,
   der Spielleiter lenkt den Blick („Hierhin schauen“)
 - **Schnellnavigation** in jeder Runde: Lobby · Mein Charakter · Karte · Bibliothek

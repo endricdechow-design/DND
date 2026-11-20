@@ -90,6 +90,7 @@ export default function NewMapDialog({ gameId, onCreated }) {
                     <span className="block truncate text-xs text-stone-500">
                       {m.folder ? `📁 ${m.folder}` : ''}
                       {m.data?.rooms?.length ? ` · 🏠 ${m.data.rooms.length} Räume vorbereitet` : ''}
+                      {m.data?.grid ? ' · 📐 Raster eingestellt' : ''}
                     </span>
                   </span>
                 </button>

@@ -12,7 +12,7 @@ const ROOM_TOOLS = TOOLS.filter((t) => t.key !== 'brush')
  * Räume auf einer Karte einzeichnen und benennen (ohne Nebel).
  * Wird in der Werkstatt und im Karten-Editor der Runde benutzt.
  */
-export default function RoomsEditor({ imageUrl, rooms, onChange, height = 'h-[60vh] min-h-80' }) {
+export default function RoomsEditor({ imageUrl, rooms, onChange, grid = null, height = 'h-[60vh] min-h-80' }) {
   const [tool, setTool] = useState('rect')
   const [pending, setPending] = useState(null) // neu gezeichnete Form, wartet auf Namen
   const [renaming, setRenaming] = useState(null)
@@ -23,6 +23,7 @@ export default function RoomsEditor({ imageUrl, rooms, onChange, height = 'h-[60
       <MapCanvas
         imageUrl={imageUrl}
         rooms={rooms}
+        grid={grid}
         showRooms
         fogStyle="none"
         tool={tool}

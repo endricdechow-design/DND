@@ -45,6 +45,9 @@ Claude baut, testet und pusht; die Seite wird automatisch aus `main` veröffentl
   Anlegen/Löschen in `src/lib/maps.js` (Bild aus der Bibliothek wird kopiert), Komponenten in `src/components/map/`
   (`MapCanvas` = Anzeige + Zoom + Zeichnen; Nebel = Wolken-Textur `cloudTexture()` + ziehende Schwaden `.fog-drift`), Seite `MapPage.jsx` (`/runde/:id/karte`). Werkstatt-Karten speichern Räume in
   `data.rooms` (werden beim Anlegen übernommen). Kanal `map-<gameId>` (Broadcast `changed`).
+- Raster (Migration 014): `battle_maps.grid` jsonb `{ type, size, ox, oy, meters, show }` (Anteile der Bildbreite), Logik in
+  `src/lib/grid.js` (`normalizeGrid`, `gridFromCell`, `playerGrid`, `roomSizeLabel`, Ausblenden beim Herauszoomen `gridOpacity`).
+  Einstellen in `map/GridEditor.jsx` (Reiter „📐 Raster“, Werkstatt über `GridOverlay`, gespeichert in `data.grid`).
 - Tisch-Bildschirm: `/tisch/:code` (`TablePage.jsx`, **ohne Anmeldung**, außerhalb von Layout). Tabelle `game_displays`
   (Code je Runde), RPCs `get_display_code`, `renew_display_code`, `get_display_state(code)` (auch für `anon`, liefert nie Räume),
   `get_display_version(code)` (Migration 013: winziger Stand, der Bildschirm lädt nur bei Änderung neu). Pinselstriche werden

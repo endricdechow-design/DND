@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router'
 import { supabase } from '../lib/supabase'
 import MapCanvas from '../components/map/MapCanvas'
+import { playerGrid } from '../lib/grid'
 
 /**
  * Tisch-Bildschirm: zeigt dauerhaft die Karte, die der Spielleiter gerade zeigt –
@@ -122,7 +123,7 @@ export default function TablePage() {
           </p>
         </Center>
       ) : map ? (
-        <MapCanvas key={map.id} imageUrl={map.image_url} ops={map.fog} fogStyle="opaque" followView={map.view ?? null} className="h-full w-full" />
+        <MapCanvas key={map.id} imageUrl={map.image_url} ops={map.fog} grid={playerGrid(map.grid)} fogStyle="opaque" followView={map.view ?? null} className="h-full w-full" />
       ) : (
         <Center>
           <p className="text-6xl">🐉</p>

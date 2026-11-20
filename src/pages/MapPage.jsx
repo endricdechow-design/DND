@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { translateError } from '../lib/errors'
 import { deleteMap } from '../lib/maps'
+import { playerGrid } from '../lib/grid'
 import { useCompendium } from '../lib/compendium'
 import GameNav from '../components/GameNav'
 import GameMasterBanner from '../components/GameMasterBanner'
@@ -103,7 +104,7 @@ function Maps({ gameId }) {
         </PageHeader>
         {error && <p className="alert-error">{error}</p>}
         {map ? (
-          <MapCanvas key={map.id} imageUrl={map.image_url} ops={map.fog} fogStyle="opaque" className="h-[70vh] min-h-80 rounded-2xl border border-stone-800" />
+          <MapCanvas key={map.id} imageUrl={map.image_url} ops={map.fog} grid={playerGrid(map.grid)} fogStyle="opaque" className="h-[70vh] min-h-80 rounded-2xl border border-stone-800" />
         ) : (
           <p className="card text-center text-stone-400">🌫️ Der Spielleiter zeigt gerade keine Karte. Sobald er eine zeigt, erscheint sie hier von selbst.</p>
         )}

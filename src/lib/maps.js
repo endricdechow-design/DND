@@ -19,7 +19,7 @@ export async function createMapFromFile(gameId, name, file) {
 /**
  * Neue Nebelkarte aus einer Karte der Bibliothek. Das Bild wird kopiert,
  * damit die Nebelkarte bleibt, auch wenn der Bibliothekseintrag gelöscht wird.
- * Vorbereitete Räume (aus der Werkstatt) werden übernommen.
+ * Vorbereitete Räume und das Raster (aus der Werkstatt) werden übernommen.
  */
 export async function createMapFromLibrary(gameId, item) {
   const id = crypto.randomUUID()
@@ -32,7 +32,7 @@ export async function createMapFromLibrary(gameId, item) {
     const { error } = await supabase.storage.from('library').copy(from, to)
     if (!error) imageUrl = supabase.storage.from('library').getPublicUrl(to).data.publicUrl
   }
-  return insertMap({ id, game_id: gameId, name: item.name.slice(0, 80), image_url: imageUrl, rooms: item.data?.rooms ?? [] })
+  return insertMap({ id, game_id: gameId, name: item.name.slice(0, 80), image_url: imageUrl, rooms: item.data?.rooms ?? [], grid: item.data?.grid ?? null })
 }
 
 async function insertMap(row) {

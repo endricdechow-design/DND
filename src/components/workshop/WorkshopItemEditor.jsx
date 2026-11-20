@@ -7,6 +7,8 @@ import { parseKg } from '../../lib/inventory'
 import { RARITIES, WORKSHOP_TYPES, imageSizeFor } from '../../data/library'
 import CatalogNameInput from '../library/CatalogNameInput'
 import RoomsOverlay from '../map/RoomsOverlay'
+import GridOverlay from '../map/GridOverlay'
+import { GRID_TYPES, normalizeGrid } from '../../lib/grid'
 import { ask } from '../../lib/confirm'
 
 const PLACEHOLDERS = {
@@ -34,6 +36,8 @@ export default function WorkshopItemEditor({ adventureId, item, defaultType = 'i
   const [preview, setPreview] = useState(null)
   const [rooms, setRooms] = useState(item?.data?.rooms ?? [])
   const [editingRooms, setEditingRooms] = useState(false)
+  const [grid, setGrid] = useState(item?.data?.grid ?? null)
+  const [editingGrid, setEditingGrid] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -64,6 +68,7 @@ export default function WorkshopItemEditor({ adventureId, item, defaultType = 'i
           ...(type === 'item' ? { rarity: rarityKey, weight: parseKg(weight) ?? undefined } : { rarity: undefined, weight: undefined }),
           ...(type === 'effect' ? { duration: duration.trim() || undefined } : { duration: undefined }),
           rooms: type === 'map' && rooms.length ? rooms : undefined,
+          grid: type === 'map' && grid ? grid : undefined,
         },
       }
       const { error } = item
@@ -192,14 +197,34 @@ export default function WorkshopItemEditor({ adventureId, item, defaultType = 'i
             <p className="text-sm text-stone-300">🏠 {rooms.length ? `${rooms.length} Räume vorbereitet` : 'Noch keine Räume eingezeichnet'}</p>
             <button type="button" className="btn-secondary px-3 py-1.5 text-sm" onClick={() => setEditingRooms(true)}>Räume einzeichnen</button>
           </div>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-stone-800 pt-2">
+            <p className="text-sm text-stone-300">
+              📐 {grid ? `${GRID_TYPES.find((t) => t.key === normalizeGrid(grid).type)?.label ?? 'Raster'} eingestellt` : 'Raster noch nicht eingestellt'}
+            </p>
+            <button type="button" className="btn-secondary px-3 py-1.5 text-sm" onClick={() => setEditingGrid(true)}>Raster einstellen</button>
+          </div>
           <p className="mt-1 text-xs text-stone-500">
-            Für die Nebelkarte: Zeichne Räume ein und benenne sie. Im Spiel deckst du sie dann mit einem Tipp auf.
+            Für die Nebelkarte: Räume einzeichnen (im Spiel mit einem Tipp aufdecken) und das Raster einstellen (wie groß ist ein Feld?).
           </p>
         </div>
+      )}
+      {editingGrid && (
+        <GridOverlay
+          title={name || 'Karte'}
+          imageUrl={shownImage}
+          rooms={rooms}
+          grid={grid}
+          onClose={() => setEditingGrid(false)}
+          onSave={(next) => {
+            setGrid(next)
+            setEditingGrid(false)
+          }}
+        />
       )}
       {editingRooms && (
         <RoomsOverlay
           title={name || 'Karte'}
+          grid={grid}
           imageUrl={shownImage}
           rooms={rooms}
           onClose={() => setEditingRooms(false)}

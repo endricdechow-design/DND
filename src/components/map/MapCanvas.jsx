@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { gridOpacity, normalizeGrid, roomSizeLabel } from '../../lib/grid'
 import { CLOUD_TILE, FOG_COLOR, cloudTexture, isRoomRevealed, renderFog, roundPoint, shapeCenter, simplifyStroke } from '../../lib/fog'
 
 const FOG_RES = 1600 // Auflösung des Nebels (Pixel Breite) – reicht für weiche Kanten
@@ -25,6 +26,8 @@ export default function MapCanvas({
   onShape,
   followView,
   viewRef,
+  grid = null, // Raster (siehe lib/grid.js) – null = keins anzeigen
+  gridAlways = false, // beim Einstellen: Raster immer voll sichtbar, egal wie weit herausgezoomt
   className = '',
 }) {
   const controlled = followView !== undefined
@@ -302,6 +305,7 @@ export default function MapCanvas({
             setImg({ nw: e.currentTarget.naturalWidth, nh: e.currentTarget.naturalHeight })
           }}
         />
+        {img && grid && view && <GridLayer grid={grid} img={img} scale={view.s} always={gridAlways} />}
         {img &&
           [fogA, fogB].map((ref, i) => {
             const k = img.nw / fogW
@@ -349,7 +353,7 @@ export default function MapCanvas({
         )}
         {img && (
           <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox={`0 0 ${img.nw} ${img.nh}`}>
-            {showRooms && rooms.map((room) => <RoomOutline key={room.id} room={room} img={img} revealed={isRoomRevealed(ops, room.id)} />)}
+            {showRooms && rooms.map((room) => <RoomOutline key={room.id} room={room} img={img} revealed={isRoomRevealed(ops, room.id)} size={grid ? roomSizeLabel(room, grid, img.nw, img.nh) : null} />)}
             {draft && <DraftShape draft={draft} img={img} />}
           </svg>
         )}
@@ -393,7 +397,28 @@ function MapButton({ label, onClick, children }) {
 
 const ptsAttr = (pts, img) => pts.map(([x, y]) => `${x * img.nw},${y * img.nh}`).join(' ')
 
-function RoomOutline({ room, img, revealed }) {
+// Raster als feine Linien (SVG-Muster); blendet beim Herauszoomen aus
+function GridLayer({ grid, img, scale, always }) {
+  const g = normalizeGrid(grid)
+  if (g.type === 'world' || !g.size) return null
+  const cell = g.size * img.nw
+  const opacity = always ? 1 : gridOpacity(cell * scale)
+  if (opacity <= 0) return null
+  const id = `grid-${Math.round(cell * 100)}-${Math.round(g.ox * 1e5)}-${Math.round(g.oy * 1e5)}`
+  return (
+    <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox={`0 0 ${img.nw} ${img.nh}`} style={{ opacity, transition: 'opacity 0.3s' }} aria-hidden>
+      <defs>
+        <pattern id={id} width={cell} height={cell} patternUnits="userSpaceOnUse" x={g.ox * img.nw} y={g.oy * img.nw}>
+          <path d={`M ${cell} 0 L 0 0 0 ${cell}`} fill="none" stroke="rgba(12,10,9,0.55)" strokeWidth={3} vectorEffect="non-scaling-stroke" />
+          <path d={`M ${cell} 0 L 0 0 0 ${cell}`} fill="none" stroke="rgba(251,191,36,0.55)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+        </pattern>
+      </defs>
+      <rect width={img.nw} height={img.nh} fill={`url(#${id})`} />
+    </svg>
+  )
+}
+
+function RoomOutline({ room, img, revealed, size }) {
   const color = revealed ? '#4ade80' : '#f59e0b'
   const [cx, cy] = shapeCenter(room)
   const fontSize = Math.max(14, img.nw * 0.016)
@@ -419,6 +444,21 @@ function RoomOutline({ room, img, revealed }) {
       >
         {room.name}
       </text>
+      {size && (
+        <text
+          x={cx * img.nw}
+          y={cy * img.nh + fontSize * 1.1}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize={fontSize * 0.7}
+          fill={color}
+          stroke="#0c0a09"
+          strokeWidth={fontSize / 6}
+          paintOrder="stroke"
+        >
+          {size}
+        </text>
+      )}
     </g>
   )
 }

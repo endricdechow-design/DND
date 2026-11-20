@@ -4,6 +4,8 @@ import MapCanvas from './MapCanvas'
 import MapToolbar from './MapToolbar'
 import RoomList from './RoomList'
 import RoomsEditor from './RoomsEditor'
+import GridEditor from './GridEditor'
+import { hasGrid, normalizeGrid } from '../../lib/grid'
 import NameDialog from '../NameDialog'
 import { ask } from '../../lib/confirm'
 
@@ -21,6 +23,7 @@ export default function MapEditor({ map, onUpdate, onShow, onDelete }) {
   const viewRef = useRef(null)
 
   const fog = map.fog ?? []
+  const gridOrNull = hasGrid(map.grid) ? normalizeGrid(map.grid) : null
   const rooms = map.rooms ?? []
   const addOp = (op) => onUpdate({ fog: [...fog, op] })
 
@@ -44,7 +47,8 @@ export default function MapEditor({ map, onUpdate, onShow, onDelete }) {
       <div className="flex gap-2 border-b border-stone-800">
         {[
           ['fog', '🌫️ Nebel'],
-          ['rooms', `🏠 Räume vorbereiten (${rooms.length})`],
+          ['rooms', `🏠 Räume (${rooms.length})`],
+          ['grid', '📐 Raster'],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -57,8 +61,10 @@ export default function MapEditor({ map, onUpdate, onShow, onDelete }) {
         ))}
       </div>
 
-      {tab === 'rooms' ? (
-        <RoomsEditor imageUrl={map.image_url} rooms={rooms} onChange={(next) => onUpdate({ rooms: next })} />
+      {tab === 'grid' ? (
+        <GridEditor imageUrl={map.image_url} rooms={rooms} grid={map.grid} onSave={(grid) => onUpdate({ grid })} />
+      ) : tab === 'rooms' ? (
+        <RoomsEditor imageUrl={map.image_url} rooms={rooms} grid={gridOrNull} onChange={(next) => onUpdate({ rooms: next })} />
       ) : (
         <>
           <MapToolbar tool={tool} setTool={setTool} brush={brush} setBrush={setBrush}>
@@ -84,6 +90,7 @@ export default function MapEditor({ map, onUpdate, onShow, onDelete }) {
 
           <MapCanvas
             imageUrl={map.image_url}
+            grid={gridOrNull}
             ops={fog}
             rooms={rooms}
             showRooms={!playerView}
